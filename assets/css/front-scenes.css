@@ -1,46 +1,56 @@
-.wpgsap-scene--fade-in,
-.wpgsap-scene--slide-in,
-.wpgsap-scene--stagger-children > * {
+.wpmotion-scene--fade-in,
+.wpmotion-scene--slide-in,
+.wpmotion-scene--stagger-children > * {
     opacity: 0;
 }
 
-.wpgsap-scene--slide-in {
-    transform: translateY(var(--wpgsap-distance, 2rem));
+.wpmotion-scene--slide-in {
+    transform: translateY(var(--wpmotion-distance, 2rem));
 }
 
-.wpgsap-scene.is-visible.wpgsap-scene--fade-in,
-.wpgsap-scene.is-visible.wpgsap-scene--slide-in {
+.wpmotion-scene.is-visible.wpmotion-scene--fade-in,
+.wpmotion-scene.is-visible.wpmotion-scene--slide-in {
     opacity: 1;
     transform: none;
-    transition: opacity var(--wpgsap-duration, 400ms) var(--wpgsap-easing, ease),
-        transform var(--wpgsap-duration, 400ms) var(--wpgsap-easing, ease);
+    transition: opacity var(--wpmotion-duration, 400ms) var(--wpmotion-easing, ease),
+        transform var(--wpmotion-duration, 400ms) var(--wpmotion-easing, ease);
 }
 
-.wpgsap-scene.is-visible.wpgsap-scene--stagger-children > * {
+.wpmotion-scene.is-visible.wpmotion-scene--stagger-children > * {
     opacity: 1;
     transform: none;
-    transition: opacity var(--wpgsap-duration, 400ms) var(--wpgsap-easing, ease);
+    transition: opacity var(--wpmotion-duration, 400ms) var(--wpmotion-easing, ease);
 }
 
-.wpgsap-scene--stagger-children > *:nth-child(1) { transition-delay: 0ms; }
-.wpgsap-scene--stagger-children > *:nth-child(2) { transition-delay: 60ms; }
-.wpgsap-scene--stagger-children > *:nth-child(3) { transition-delay: 120ms; }
-.wpgsap-scene--stagger-children > *:nth-child(4) { transition-delay: 180ms; }
-.wpgsap-scene--stagger-children > *:nth-child(5) { transition-delay: 240ms; }
-.wpgsap-scene--stagger-children > *:nth-child(6) { transition-delay: 300ms; }
-.wpgsap-scene--stagger-children > *:nth-child(n+7) { transition-delay: 360ms; }
+.wpmotion-scene--stagger-children > *:nth-child(1) { transition-delay: 0ms; }
+.wpmotion-scene--stagger-children > *:nth-child(2) { transition-delay: 60ms; }
+.wpmotion-scene--stagger-children > *:nth-child(3) { transition-delay: 120ms; }
+.wpmotion-scene--stagger-children > *:nth-child(4) { transition-delay: 180ms; }
+.wpmotion-scene--stagger-children > *:nth-child(5) { transition-delay: 240ms; }
+.wpmotion-scene--stagger-children > *:nth-child(6) { transition-delay: 300ms; }
+.wpmotion-scene--stagger-children > *:nth-child(n+7) { transition-delay: 360ms; }
+
+.wpmotion-scene--pin {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.wpmotion-word {
+    display: inline-block;
+}
 
 @media (prefers-reduced-motion: reduce) {
-    .wpgsap-scene--fade-in,
-    .wpgsap-scene--slide-in,
-    .wpgsap-scene--stagger-children > * {
+    .wpmotion-scene--fade-in,
+    .wpmotion-scene--slide-in,
+    .wpmotion-scene--stagger-children > * {
         opacity: 1;
         transform: none;
         transition: none;
     }
 }
 
-.wpgsap-sr-status {
+.wpmotion-sr-status {
     position: absolute;
     width: 1px;
     height: 1px;

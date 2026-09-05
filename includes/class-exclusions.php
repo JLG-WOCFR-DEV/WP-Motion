@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Exclusions
+final class WpMotion_Exclusions
 {
     /**
      * Built-in paths that must never animate.

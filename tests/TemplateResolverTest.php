@@ -16,10 +16,10 @@ final class TemplateResolverTest extends TestCase
             'home' => '/',
         ];
 
-        $this->assertSame('checkout', WpGsap_Template_Resolver::from_path('/checkout/pay', $known));
-        $this->assertSame('shop', WpGsap_Template_Resolver::from_path('/shop/page/2', $known));
-        $this->assertSame('home', WpGsap_Template_Resolver::from_path('/', $known));
-        $this->assertSame('unknown', WpGsap_Template_Resolver::from_path('/hello-world', $known));
-        $this->assertSame('excluded', WpGsap_Template_Resolver::from_path('/wp-admin/', $known));
+        $this->assertSame('checkout', WpMotion_Template_Resolver::from_path('/checkout/pay', $known));
+        $this->assertSame('shop', WpMotion_Template_Resolver::from_path('/shop/page/2', $known));
+        $this->assertSame('home', WpMotion_Template_Resolver::from_path('/', $known));
+        $this->assertSame('unknown', WpMotion_Template_Resolver::from_path('/hello-world', $known));
+        $this->assertSame('excluded', WpMotion_Template_Resolver::from_path('/wp-admin/', $known));
     }
 }

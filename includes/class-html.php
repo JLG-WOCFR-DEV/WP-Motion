@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Html
+final class WpMotion_Html
 {
     public static function add_style(string $html, string $property, string $value): string
     {

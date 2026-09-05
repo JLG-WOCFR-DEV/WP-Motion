@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Shared_Elements
+final class WpMotion_Shared_Elements
 {
     public function boot(): void
     {
@@ -18,56 +18,64 @@ final class WpGsap_Shared_Elements
      */
     public function filter_block(string $content, array $block): string
     {
-        if ($content === '' || !WpGsap_Plugin::is_front_enabled()) {
+        if ($content === '' || !WpMotion_Plugin::is_front_enabled()) {
             return $content;
         }
 
-        $settings = WpGsap_Settings::get();
+        $settings = WpMotion_Settings::get();
         $name = (string) ($block['blockName'] ?? '');
         $attrs = is_array($block['attrs'] ?? null) ? $block['attrs'] : [];
-        $participate = array_key_exists('wpGsapParticipate', $attrs) ? $attrs['wpGsapParticipate'] : null;
+        $participate = null;
+        if (array_key_exists('wpMotionParticipate', $attrs)) {
+            $participate = $attrs['wpMotionParticipate'];
+        } elseif (array_key_exists('wpGsapParticipate', $attrs)) {
+            $participate = $attrs['wpGsapParticipate'];
+        }
 
         if ($name === 'core/template-part' && !empty($settings['header_persistent'])) {
             $slug = (string) ($attrs['slug'] ?? '');
             if ($slug === 'header') {
-                $content = WpGsap_Html::add_style($content, 'view-transition-name', WpGsap_Names::HEADER);
-                $content = WpGsap_Html::add_attribute($content, 'data-wpgsap-shared', WpGsap_Names::HEADER);
+                $content = WpMotion_Html::add_style($content, 'view-transition-name', WpMotion_Names::HEADER);
+                $content = WpMotion_Html::add_attribute($content, 'data-wpmotion-shared', WpMotion_Names::HEADER);
             }
         }
 
         if ($name === 'core/post-featured-image' && $this->should_auto($settings['shared_featured_image'], $participate)) {
             $post_id = $this->block_post_id($block);
             if ($post_id > 0) {
-                $content = $this->mark($content, WpGsap_Names::post_image($post_id));
+                $content = $this->mark($content, WpMotion_Names::post_image($post_id));
             }
         }
 
         if ($name === 'core/post-title' && $this->should_auto($settings['shared_title'], $participate)) {
             $post_id = $this->block_post_id($block);
             if ($post_id > 0) {
-                $content = $this->mark($content, WpGsap_Names::post_title($post_id));
+                $content = $this->mark($content, WpMotion_Names::post_title($post_id));
             }
         }
 
         if (in_array($name, ['core/image', 'core/cover'], true) && $participate === true) {
             $media_id = (int) ($attrs['id'] ?? 0);
-            $vt = $media_id > 0 ? WpGsap_Names::media($media_id) : WpGsap_Names::post_image($this->block_post_id($block));
+            $vt = $media_id > 0 ? WpMotion_Names::media($media_id) : WpMotion_Names::post_image($this->block_post_id($block));
             $content = $this->mark($content, $vt);
         }
 
         if (in_array($name, ['core/heading', 'core/group'], true)) {
-            $scene = is_string($attrs['wpGsapScene'] ?? null) ? $attrs['wpGsapScene'] : '';
+            $scene = is_string($attrs['wpMotionScene'] ?? null) ? $attrs['wpMotionScene'] : '';
+            if ($scene === '' && is_string($attrs['wpGsapScene'] ?? null)) {
+                $scene = $attrs['wpGsapScene'];
+            }
             if ($scene !== '' && $scene !== 'none') {
-                $content = WpGsap_Html::add_attribute($content, 'data-wpgsap-scene', sanitize_key($scene));
-                $content = WpGsap_Html::add_class($content, 'wpgsap-scene');
-                $content = WpGsap_Html::add_class($content, 'wpgsap-scene--' . sanitize_key($scene));
+                $content = WpMotion_Html::add_attribute($content, 'data-wpmotion-scene', sanitize_key($scene));
+                $content = WpMotion_Html::add_class($content, 'wpmotion-scene');
+                $content = WpMotion_Html::add_class($content, 'wpmotion-scene--' . sanitize_key($scene));
             }
         }
 
         if ($name === 'core/heading' && $participate === true) {
             $post_id = $this->block_post_id($block);
             if ($post_id > 0) {
-                $content = $this->mark($content, WpGsap_Names::post_title($post_id));
+                $content = $this->mark($content, WpMotion_Names::post_title($post_id));
             }
         }
 
@@ -76,25 +84,25 @@ final class WpGsap_Shared_Elements
 
     public function filter_thumbnail(string $html, $post_id): string
     {
-        if ($html === '' || !WpGsap_Plugin::is_front_enabled()) {
+        if ($html === '' || !WpMotion_Plugin::is_front_enabled()) {
             return $html;
         }
 
-        $settings = WpGsap_Settings::get();
+        $settings = WpMotion_Settings::get();
         if (empty($settings['shared_featured_image'])) {
             return $html;
         }
 
-        return $this->mark($html, WpGsap_Names::post_image((int) $post_id));
+        return $this->mark($html, WpMotion_Names::post_image((int) $post_id));
     }
 
     public function filter_logo(string $html): string
     {
-        if ($html === '' || !WpGsap_Plugin::is_front_enabled()) {
+        if ($html === '' || !WpMotion_Plugin::is_front_enabled()) {
             return $html;
         }
 
-        return $this->mark($html, WpGsap_Names::LOGO);
+        return $this->mark($html, WpMotion_Names::LOGO);
     }
 
     /**
@@ -107,7 +115,7 @@ final class WpGsap_Shared_Elements
         unset($css);
         $post_id = (int) $post_id;
         if ($post_id > 0) {
-            $classes[] = 'wpgsap-post-' . $post_id;
+            $classes[] = 'wpmotion-post-' . $post_id;
         }
 
         return $classes;
@@ -115,17 +123,17 @@ final class WpGsap_Shared_Elements
 
     public function print_header_css(): void
     {
-        if (!WpGsap_Plugin::is_front_enabled()) {
+        if (!WpMotion_Plugin::is_front_enabled()) {
             return;
         }
 
-        $settings = WpGsap_Settings::get();
+        $settings = WpMotion_Settings::get();
         if (empty($settings['header_persistent'])) {
             return;
         }
 
         $selector = (string) $settings['header_selector'];
-        echo '<style id="wpgsap-header">' . $selector . '{view-transition-name:' . WpGsap_Names::HEADER . ';}</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<style id="wpmotion-header">' . $selector . '{view-transition-name:' . WpMotion_Names::HEADER . ';}</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     /**
@@ -159,7 +167,7 @@ final class WpGsap_Shared_Elements
 
     private function mark(string $html, string $name): string
     {
-        $html = WpGsap_Html::add_style($html, 'view-transition-name', $name);
-        return WpGsap_Html::add_attribute($html, 'data-wpgsap-shared', $name);
+        $html = WpMotion_Html::add_style($html, 'view-transition-name', $name);
+        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', $name);
     }
 }

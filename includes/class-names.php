@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Names
+final class WpMotion_Names
 {
-    public const LOGO = 'wpgsap-site-logo';
-    public const HEADER = 'wpgsap-site-header';
+    public const LOGO = 'wpmotion-site-logo';
+    public const HEADER = 'wpmotion-site-header';
 
     public static function ident(string $kind, int $id): string
     {
@@ -15,7 +15,7 @@ final class WpGsap_Names
             $kind = 'item';
         }
 
-        return 'wpgsap-' . $kind . '-' . max(0, $id);
+        return 'wpmotion-' . $kind . '-' . max(0, $id);
     }
 
     public static function post_image(int $post_id): string

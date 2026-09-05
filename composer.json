@@ -1,6 +1,6 @@
 {
-    "name": "jlg/wp-gsap",
-    "description": "Transitions de pages WordPress (View Transitions) et scènes GSAP optionnelles.",
+    "name": "jlg/wp-motion",
+    "description": "Transitions de pages WordPress (View Transitions) chorégraphiées avec Motion (MIT).",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {

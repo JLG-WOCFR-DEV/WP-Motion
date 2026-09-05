@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_View_Transitions
+final class WpMotion_View_Transitions
 {
     public function boot(): void
     {
@@ -13,16 +13,16 @@ final class WpGsap_View_Transitions
 
     public function html_attributes(string $output): string
     {
-        if (!WpGsap_Plugin::is_front_enabled()) {
+        if (!WpMotion_Plugin::is_front_enabled()) {
             return $output;
         }
 
-        $template = WpGsap_Template_Resolver::current();
+        $template = WpMotion_Template_Resolver::current();
         $id = (int) get_queried_object_id();
 
-        $output .= ' data-wpgsap-template="' . esc_attr($template) . '"';
+        $output .= ' data-wpmotion-template="' . esc_attr($template) . '"';
         if ($id > 0) {
-            $output .= ' data-wpgsap-id="' . esc_attr((string) $id) . '"';
+            $output .= ' data-wpmotion-id="' . esc_attr((string) $id) . '"';
         }
 
         return $output;
@@ -30,15 +30,15 @@ final class WpGsap_View_Transitions
 
     public function print_opt_in(): void
     {
-        if (!WpGsap_Plugin::is_front_enabled()) {
+        if (!WpMotion_Plugin::is_front_enabled()) {
             return;
         }
 
-        $settings = WpGsap_Settings::get();
-        $tokens = WpGsap_Tokens::get($settings);
-        $template = WpGsap_Template_Resolver::current();
+        $settings = WpMotion_Settings::get();
+        $tokens = WpMotion_Tokens::get($settings);
+        $template = WpMotion_Template_Resolver::current();
 
-        echo '<style id="wpgsap-tokens">' . WpGsap_Tokens::to_css($tokens) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<style id="wpmotion-tokens">' . WpMotion_Tokens::to_css($tokens) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
         if (($settings['preset'] ?? 'fade') === 'none' && $this->all_routes_none($settings)) {
             return;
@@ -48,40 +48,47 @@ final class WpGsap_View_Transitions
             return;
         }
 
-        echo '<style id="wpgsap-vt-optin">@view-transition{navigation:auto;}@media (prefers-reduced-motion:reduce){:root{--wpgsap-duration:var(--wpgsap-reduced-duration);}}</style>' . "\n";
+        echo '<style id="wpmotion-vt-optin">@view-transition{navigation:auto;}@media (prefers-reduced-motion:reduce){:root{--wpmotion-duration:var(--wpmotion-reduced-duration);}}</style>' . "\n";
     }
 
     public function enqueue(): void
     {
-        if (!WpGsap_Plugin::is_front_enabled()) {
+        if (!WpMotion_Plugin::is_front_enabled()) {
             return;
         }
 
-        $settings = WpGsap_Settings::get();
-        $tokens = WpGsap_Tokens::get($settings);
+        $settings = WpMotion_Settings::get();
+        $tokens = WpMotion_Tokens::get($settings);
 
         wp_enqueue_style(
-            'wpgsap-front-transitions',
-            WPGSAP_URL . 'assets/css/front-transitions.css',
+            'wpmotion-front-transitions',
+            WPMOTION_URL . 'assets/css/front-transitions.css',
             [],
-            WPGSAP_VERSION
+            WPMOTION_VERSION
         );
         wp_enqueue_style(
-            'wpgsap-front-scenes',
-            WPGSAP_URL . 'assets/css/front-scenes.css',
-            ['wpgsap-front-transitions'],
-            WPGSAP_VERSION
+            'wpmotion-front-scenes',
+            WPMOTION_URL . 'assets/css/front-scenes.css',
+            ['wpmotion-front-transitions'],
+            WPMOTION_VERSION
         );
 
         wp_enqueue_script(
-            'wpgsap-front',
-            WPGSAP_URL . 'assets/js/front.js',
+            'wpmotion-vendor',
+            WPMOTION_URL . 'assets/vendor/motion.min.js',
             [],
-            WPGSAP_VERSION,
+            WpMotion_Assets::MOTION_VERSION,
+            true
+        );
+        wp_enqueue_script(
+            'wpmotion-front',
+            WPMOTION_URL . 'assets/js/front.js',
+            ['wpmotion-vendor'],
+            WPMOTION_VERSION,
             true
         );
 
-        wp_localize_script('wpgsap-front', 'WPGSAP', $this->js_config($settings, $tokens));
+        wp_localize_script('wpmotion-front', 'WPMOTION', $this->js_config($settings, $tokens));
     }
 
     /**
@@ -99,21 +106,15 @@ final class WpGsap_View_Transitions
             'reducedMotion' => $tokens['reduced_motion'],
             'excludePaths' => $settings['exclude_paths'],
             'routes' => $settings['routes'],
-            'gsapSource' => $settings['gsap_source'],
-            'gsap' => [
-                'core' => 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js',
-                'scrollTrigger' => 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js',
-                'splitText' => 'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js',
-            ],
             'current' => [
-                'template' => WpGsap_Template_Resolver::current(),
+                'template' => WpMotion_Template_Resolver::current(),
                 'id' => (int) get_queried_object_id(),
             ],
-            'known' => WpGsap_Template_Resolver::known_from_wordpress(),
+            'known' => WpMotion_Template_Resolver::known_from_wordpress(),
             'i18n' => [
                 'pageReady' => sprintf(
                     /* translators: %s: document title */
-                    __('Page chargée : %s', 'wp-gsap'),
+                    __('Page chargée : %s', 'wp-motion'),
                     wp_get_document_title()
                 ),
             ],

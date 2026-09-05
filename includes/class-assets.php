@@ -2,33 +2,30 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Assets
+final class WpMotion_Assets
 {
+    public const MOTION_VERSION = '13.2.0';
+
     public function boot(): void
     {
-        add_action('admin_notices', [$this, 'gsap_license_notice']);
+        add_action('admin_notices', [$this, 'license_notice']);
     }
 
-    public function gsap_license_notice(): void
+    public function license_notice(): void
     {
         if (!current_user_can('manage_options')) {
             return;
         }
 
         $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
-        if ($page !== 'wp-gsap') {
-            return;
-        }
-
-        $settings = WpGsap_Settings::get();
-        if (($settings['gsap_source'] ?? 'cdn') !== 'cdn') {
+        if ($page !== 'wp-motion') {
             return;
         }
 
         echo '<div class="notice notice-info"><p>';
         echo esc_html__(
-            'GSAP n’est pas GPL. S’il est chargé, ce sera depuis jsDelivr (CDN) uniquement sur les pages qui utilisent une scène SplitText, pin ou parallax. Licence GSAP Standard (Webflow), distincte de la GPL du plugin.',
-            'wp-gsap'
+            'Motion 13.2.0 est bundlé (MIT) dans ce plugin. Le code WP Motion est GPL-2.0-or-later. Aucun code GSAP n’est chargé.',
+            'wp-motion'
         );
         echo '</p></div>';
     }

@@ -20,5 +20,5 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-Note: GSAP is not bundled. When loaded from a CDN it remains under the
-GSAP Standard License (Webflow), which is not GPL-compatible.
+Note: Motion (assets/vendor/motion.min.js) is MIT-licensed, see
+assets/vendor/MOTION-LICENSE.txt. GSAP is not used.

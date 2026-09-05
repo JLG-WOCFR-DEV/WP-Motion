@@ -2,32 +2,32 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Import_Export
+final class WpMotion_Import_Export
 {
     public function boot(): void
     {
-        add_action('admin_post_wp_gsap_export', [$this, 'export']);
-        add_action('admin_post_wp_gsap_import', [$this, 'import']);
+        add_action('admin_post_wp_motion_export', [$this, 'export']);
+        add_action('admin_post_wp_motion_import', [$this, 'import']);
     }
 
     public function export(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Droits insuffisants.', 'wp-gsap'), '', ['response' => 403]);
+            wp_die(esc_html__('Droits insuffisants.', 'wp-motion'), '', ['response' => 403]);
         }
 
-        check_admin_referer('wp_gsap_export');
+        check_admin_referer('wp_motion_export');
 
         $payload = [
-            'plugin' => 'wp-gsap',
-            'version' => WPGSAP_VERSION,
+            'plugin' => 'wp-motion',
+            'version' => WPMOTION_VERSION,
             'exported_at' => gmdate('c'),
-            'settings' => WpGsap_Settings::get(),
+            'settings' => WpMotion_Settings::get(),
         ];
 
         nocache_headers();
         header('Content-Type: application/json; charset=utf-8');
-        header('Content-Disposition: attachment; filename=wp-gsap-settings.json');
+        header('Content-Disposition: attachment; filename=wp-motion-settings.json');
         echo wp_json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         exit;
     }
@@ -35,33 +35,33 @@ final class WpGsap_Import_Export
     public function import(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Droits insuffisants.', 'wp-gsap'), '', ['response' => 403]);
+            wp_die(esc_html__('Droits insuffisants.', 'wp-motion'), '', ['response' => 403]);
         }
 
-        check_admin_referer('wp_gsap_import');
+        check_admin_referer('wp_motion_import');
 
-        $redirect = admin_url('admin.php?page=wp-gsap&tab=tools');
+        $redirect = admin_url('admin.php?page=wp-motion&tab=tools');
 
-        if (empty($_FILES['wp_gsap_import']['tmp_name']) || !is_uploaded_file((string) $_FILES['wp_gsap_import']['tmp_name'])) {
-            wp_safe_redirect(add_query_arg('wpgsap', 'import-missing', $redirect));
+        if (empty($_FILES['wp_motion_import']['tmp_name']) || !is_uploaded_file((string) $_FILES['wp_motion_import']['tmp_name'])) {
+            wp_safe_redirect(add_query_arg('wpmotion', 'import-missing', $redirect));
             exit;
         }
 
-        $raw = file_get_contents((string) $_FILES['wp_gsap_import']['tmp_name']);
+        $raw = file_get_contents((string) $_FILES['wp_motion_import']['tmp_name']);
         if (!is_string($raw) || $raw === '') {
-            wp_safe_redirect(add_query_arg('wpgsap', 'import-invalid', $redirect));
+            wp_safe_redirect(add_query_arg('wpmotion', 'import-invalid', $redirect));
             exit;
         }
 
         $decoded = json_decode($raw, true);
         $settings = self::extract_settings($decoded);
         if ($settings === null) {
-            wp_safe_redirect(add_query_arg('wpgsap', 'import-invalid', $redirect));
+            wp_safe_redirect(add_query_arg('wpmotion', 'import-invalid', $redirect));
             exit;
         }
 
-        update_option(WpGsap_Settings::OPTION, WpGsap_Settings::sanitize($settings));
-        wp_safe_redirect(add_query_arg('wpgsap', 'imported', $redirect));
+        update_option(WpMotion_Settings::OPTION, WpMotion_Settings::sanitize($settings));
+        wp_safe_redirect(add_query_arg('wpmotion', 'imported', $redirect));
         exit;
     }
 

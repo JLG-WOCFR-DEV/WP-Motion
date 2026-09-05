@@ -18,13 +18,13 @@
     var PARTICIPATE_BLOCKS = ['core/image', 'core/cover', 'core/heading', 'core/post-featured-image', 'core/post-title'];
     var SCENE_BLOCKS = ['core/group', 'core/heading'];
 
-    addFilter('blocks.registerBlockType', 'wp-gsap/attributes', function (settings, name) {
+    addFilter('blocks.registerBlockType', 'wp-motion/attributes', function (settings, name) {
         if (PARTICIPATE_BLOCKS.indexOf(name) === -1 && SCENE_BLOCKS.indexOf(name) === -1) {
             return settings;
         }
         settings.attributes = Object.assign({}, settings.attributes, {
-            wpGsapParticipate: { type: 'boolean' },
-            wpGsapScene: { type: 'string', default: '' },
+            wpMotionParticipate: { type: 'boolean' },
+            wpMotionScene: { type: 'string', default: '' },
         });
         return settings;
     });
@@ -49,31 +49,31 @@
                     {},
                     el(
                         PanelBody,
-                        { title: __('WP-GSAP', 'wp-gsap'), initialOpen: false },
+                        { title: __('WP-Motion', 'wp-motion'), initialOpen: false },
                         showParticipate && el(ToggleControl, {
-                            label: __('Participe à la transition de page', 'wp-gsap'),
-                            checked: !!attrs.wpGsapParticipate,
+                            label: __('Participe à la transition de page', 'wp-motion'),
+                            checked: !!attrs.wpMotionParticipate,
                             onChange: function (value) {
-                                props.setAttributes({ wpGsapParticipate: value });
+                                props.setAttributes({ wpMotionParticipate: value });
                             },
-                            help: __('Donne un nom View Transition stable (image, cover ou titre).', 'wp-gsap'),
+                            help: __('Donne un nom View Transition stable (image, cover ou titre).', 'wp-motion'),
                         }),
                         showScene && el(SelectControl, {
-                            label: __('Scène in-page', 'wp-gsap'),
-                            value: attrs.wpGsapScene || '',
+                            label: __('Scène in-page', 'wp-motion'),
+                            value: attrs.wpMotionScene || '',
                             options: [
-                                { label: __('Aucune', 'wp-gsap'), value: '' },
-                                { label: __('Apparition (fondu)', 'wp-gsap'), value: 'fade-in' },
-                                { label: __('Apparition (glissement)', 'wp-gsap'), value: 'slide-in' },
-                                { label: __('Stagger des enfants', 'wp-gsap'), value: 'stagger-children' },
-                                { label: __('SplitText (GSAP)', 'wp-gsap'), value: 'split-text' },
-                                { label: __('Section pinnée (GSAP)', 'wp-gsap'), value: 'pin' },
-                                { label: __('Parallax (GSAP)', 'wp-gsap'), value: 'parallax' },
+                                { label: __('Aucune', 'wp-motion'), value: '' },
+                                { label: __('Apparition (fondu)', 'wp-motion'), value: 'fade-in' },
+                                { label: __('Apparition (glissement)', 'wp-motion'), value: 'slide-in' },
+                                { label: __('Stagger des enfants', 'wp-motion'), value: 'stagger-children' },
+                                { label: __('Split texte (mots)', 'wp-motion'), value: 'split-text' },
+                                { label: __('Section pinnée (CSS sticky)', 'wp-motion'), value: 'pin' },
+                                { label: __('Parallax (Motion)', 'wp-motion'), value: 'parallax' },
                             ],
                             onChange: function (value) {
-                                props.setAttributes({ wpGsapScene: value });
+                                props.setAttributes({ wpMotionScene: value });
                             },
-                            help: __('SplitText, pin et parallax chargent GSAP depuis le CDN, uniquement sur cette page.', 'wp-gsap'),
+                            help: __('Animé avec Motion (MIT, bundlé). Le split texte est un helper GPL du plugin.', 'wp-motion'),
                         })
                     )
                 )
@@ -81,5 +81,5 @@
         };
     }, 'withWpGsapInspector');
 
-    addFilter('editor.BlockEdit', 'wp-gsap/inspector', withInspector);
+    addFilter('editor.BlockEdit', 'wp-motion/inspector', withInspector);
 })(window.wp);

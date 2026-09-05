@@ -1,11 +1,21 @@
 (function () {
     'use strict';
 
-    var config = window.WPGSAP || {};
+    var config = window.WPMOTION || {};
     var hardcoded = ['/wp-admin', '/wp-login.php', '/wp-cron.php', '/wp-json/', '/xmlrpc.php', '/feed'];
+    var leaving = false;
+    var entered = false;
+
+    function motionApi() {
+        return window.Motion || null;
+    }
 
     function prefersReduced() {
         return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function durationSec() {
+        return Math.max(0.08, (config.durationMs || 400) / 1000);
     }
 
     function normalizePath(url) {
@@ -26,10 +36,7 @@
         if (path === pattern) {
             return true;
         }
-        if (pattern !== '/' && (path === pattern || path.indexOf(pattern + '/') === 0)) {
-            return true;
-        }
-        return false;
+        return pattern !== '/' && path.indexOf(pattern + '/') === 0;
     }
 
     function isExcluded(url) {
@@ -86,10 +93,7 @@
         if (rule === '*' || rule === actual) {
             return true;
         }
-        if (rule === 'singular' && ['single', 'page', 'product', 'singular'].indexOf(actual) !== -1) {
-            return true;
-        }
-        return false;
+        return rule === 'singular' && ['single', 'page', 'product', 'singular'].indexOf(actual) !== -1;
     }
 
     function matchRoute(from, to) {
@@ -159,26 +163,26 @@
     }
 
     function onReveal(event) {
-        if (!event.viewTransition) {
-            return;
+        if (event.viewTransition) {
+            var fromUrl = event.activation && event.activation.from ? event.activation.from.url : '';
+            var from = fromUrl ? resolveTemplate(fromUrl) : 'unknown';
+            var to = (config.current && config.current.template) || 'unknown';
+            if (fromUrl && isExcluded(window.location.href)) {
+                event.viewTransition.skipTransition();
+            } else {
+                applyTypes(event.viewTransition, from, to, matchRoute(from, to));
+            }
         }
-        var fromUrl = event.activation && event.activation.from ? event.activation.from.url : '';
-        var from = fromUrl ? resolveTemplate(fromUrl) : 'unknown';
-        var to = (config.current && config.current.template) || 'unknown';
-        if (fromUrl && isExcluded(window.location.href)) {
-            event.viewTransition.skipTransition();
-            return;
-        }
-        applyTypes(event.viewTransition, from, to, matchRoute(from, to));
         announcePage();
+        playEnter();
     }
 
     function announcePage() {
-        var live = document.getElementById('wpgsap-sr-status');
+        var live = document.getElementById('wpmotion-sr-status');
         if (!live) {
             live = document.createElement('div');
-            live.id = 'wpgsap-sr-status';
-            live.className = 'wpgsap-sr-status';
+            live.id = 'wpmotion-sr-status';
+            live.className = 'wpmotion-sr-status';
             live.setAttribute('role', 'status');
             live.setAttribute('aria-live', 'polite');
             document.body.appendChild(live);
@@ -188,147 +192,226 @@
         live.textContent = template;
     }
 
-    function loadScript(src) {
-        return new Promise(function (resolve, reject) {
-            var existing = document.querySelector('script[src="' + src + '"]');
-            if (existing) {
-                existing.addEventListener('load', function () { resolve(); });
-                if (existing.getAttribute('data-loaded') === '1') {
-                    resolve();
-                }
-                return;
-            }
-            var script = document.createElement('script');
-            script.src = src;
-            script.async = true;
-            script.onload = function () {
-                script.setAttribute('data-loaded', '1');
-                resolve();
-            };
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
+    function leaveTargets() {
+        var nodes = document.querySelectorAll('main, .wp-site-blocks, #content, .site-content');
+        var extra = document.querySelectorAll('[data-wpmotion-shared], main .wp-block-post, main h1, main .wp-block-heading');
+        var list = [];
+        extra.forEach(function (node) { list.push(node); });
+        if (!list.length && nodes.length) {
+            list.push(nodes[0]);
+        }
+        return list;
     }
 
-    function loadGsap() {
-        if (window.gsap) {
-            return Promise.resolve(window.gsap);
+    function playLeave() {
+        var api = motionApi();
+        if (!api || prefersReduced() || (config.preset === 'none')) {
+            return Promise.resolve();
         }
-        if ((config.gsapSource || 'cdn') === 'none' || !config.gsap) {
-            return Promise.reject(new Error('gsap-disabled'));
+        var targets = leaveTargets();
+        if (!targets.length) {
+            return Promise.resolve();
         }
-        return loadScript(config.gsap.core)
-            .then(function () { return loadScript(config.gsap.scrollTrigger); })
-            .then(function () { return loadScript(config.gsap.splitText); })
-            .then(function () {
-                if (window.gsap && window.ScrollTrigger) {
-                    window.gsap.registerPlugin(window.ScrollTrigger);
-                }
-                if (window.gsap && window.SplitText) {
-                    window.gsap.registerPlugin(window.SplitText);
-                }
-                return window.gsap;
-            });
+        var anim = api.animate(
+            targets,
+            { opacity: 0, y: -12 },
+            { duration: durationSec() * 0.55, easing: config.easing || [0.22, 1, 0.36, 1], delay: api.stagger(0.025) }
+        );
+        return anim && anim.finished ? anim.finished.catch(function () {}) : Promise.resolve();
     }
 
-    function initCssScenes(nodes) {
-        if (!('IntersectionObserver' in window)) {
-            nodes.forEach(function (node) {
-                node.classList.add('is-visible');
-            });
+    function playEnter() {
+        if (entered) {
             return;
         }
-        var observer = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target);
-                }
+        entered = true;
+        var api = motionApi();
+        if (!api || prefersReduced()) {
+            return;
+        }
+        var main = document.querySelector('main') || document.querySelector('.wp-site-blocks') || document.querySelector('#content');
+        if (main) {
+            api.animate(main, { opacity: [0, 1], y: [20, 0] }, {
+                duration: durationSec(),
+                easing: [0.22, 1, 0.36, 1],
             });
-        }, { threshold: 0.15 });
-        nodes.forEach(function (node) {
-            observer.observe(node);
+        }
+        var cards = document.querySelectorAll('main .wp-block-post, main ul.products > li, main .wp-block-column');
+        if (cards.length) {
+            api.animate(cards, { opacity: [0, 1], y: [16, 0] }, {
+                duration: durationSec() * 0.85,
+                delay: api.stagger(0.045),
+                easing: [0.22, 1, 0.36, 1],
+            });
+        }
+    }
+
+    function shouldIntercept(anchor, event) {
+        if (!anchor || leaving) {
+            return false;
+        }
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return false;
+        }
+        if (anchor.target && anchor.target !== '' && anchor.target !== '_self') {
+            return false;
+        }
+        if (anchor.hasAttribute('download')) {
+            return false;
+        }
+        var href = anchor.href;
+        if (!href || !sameOrigin(href) || isExcluded(href)) {
+            return false;
+        }
+        var dest = new URL(href, window.location.origin);
+        if (dest.pathname === window.location.pathname && dest.search === window.location.search) {
+            return false;
+        }
+        var to = resolveTemplate(href);
+        var from = (config.current && config.current.template) || 'unknown';
+        var route = matchRoute(from, to);
+        if (route.preset === 'none') {
+            return false;
+        }
+        return true;
+    }
+
+    function onClick(event) {
+        var anchor = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+        if (!shouldIntercept(anchor, event)) {
+            return;
+        }
+        event.preventDefault();
+        leaving = true;
+        var href = anchor.href;
+        var timeout = window.setTimeout(function () {
+            window.location.href = href;
+        }, 900);
+        playLeave().then(function () {
+            window.clearTimeout(timeout);
+            window.location.href = href;
         });
     }
 
-    function initGsapScenes(nodes) {
-        loadGsap().then(function (gsap) {
-            var reduce = prefersReduced();
-            nodes.forEach(function (node) {
-                var scene = node.getAttribute('data-wpgsap-scene');
-                if (scene === 'split-text' && window.SplitText && !reduce) {
-                    var split = new window.SplitText(node, { type: 'chars,words' });
-                    gsap.from(split.chars, {
-                        yPercent: 80,
-                        opacity: 0,
-                        stagger: 0.02,
-                        duration: (config.durationMs || 400) / 1000,
-                        ease: 'power3.out',
-                        scrollTrigger: { trigger: node, start: 'top 85%' },
-                    });
-                    return;
-                }
-                if (scene === 'pin' && window.ScrollTrigger && !reduce) {
-                    window.ScrollTrigger.create({
-                        trigger: node,
-                        start: 'top top',
-                        end: '+=100%',
-                        pin: true,
-                        pinSpacing: true,
-                    });
-                    return;
-                }
-                if (scene === 'parallax' && !reduce) {
-                    gsap.to(node, {
-                        yPercent: -12,
-                        ease: 'none',
-                        scrollTrigger: {
-                            trigger: node,
-                            start: 'top bottom',
-                            end: 'bottom top',
-                            scrub: true,
-                        },
-                    });
-                }
-            });
-        }).catch(function () {
-            initCssScenes(nodes);
-        });
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function splitWords(el) {
+        if (el.getAttribute('data-wpmotion-split') === '1') {
+            return el.querySelectorAll('.wpmotion-word');
+        }
+        if (el.querySelector('img, svg, input, button, a')) {
+            return [];
+        }
+        var text = (el.textContent || '').trim();
+        if (!text) {
+            return [];
+        }
+        el.setAttribute('aria-label', text);
+        var parts = text.split(/(\s+)/);
+        el.innerHTML = parts.map(function (part) {
+            if (part === '' || /^\s+$/.test(part)) {
+                return part;
+            }
+            return '<span class="wpmotion-word" aria-hidden="true">' + escapeHtml(part) + '</span>';
+        }).join('');
+        el.setAttribute('data-wpmotion-split', '1');
+        return el.querySelectorAll('.wpmotion-word');
     }
 
     function initScenes() {
-        var nodes = Array.prototype.slice.call(document.querySelectorAll('[data-wpgsap-scene]'));
+        var api = motionApi();
+        var nodes = Array.prototype.slice.call(document.querySelectorAll('[data-wpmotion-scene]'));
         if (!nodes.length) {
             return;
         }
-        var cssScenes = [];
-        var gsapScenes = [];
+
         nodes.forEach(function (node) {
-            var scene = node.getAttribute('data-wpgsap-scene');
-            if (['split-text', 'pin', 'parallax'].indexOf(scene) !== -1) {
-                gsapScenes.push(node);
+            var scene = node.getAttribute('data-wpmotion-scene');
+            if (scene === 'pin') {
+                node.classList.add('is-visible');
+                return;
+            }
+            if (prefersReduced()) {
+                node.classList.add('is-visible');
+                return;
+            }
+            if (!api) {
+                node.classList.add('is-visible');
+                return;
+            }
+
+            if (scene === 'parallax' && api.scroll) {
+                api.scroll(api.animate(node, { y: [0, -40] }, { easing: 'linear' }), { target: node });
+                node.classList.add('is-visible');
+                return;
+            }
+
+            var run = function () {
+                if (scene === 'split-text') {
+                    var words = splitWords(node);
+                    if (words.length && api.stagger) {
+                        api.animate(words, { opacity: [0, 1], y: [12, 0] }, {
+                            duration: durationSec() * 0.7,
+                            delay: api.stagger(0.035),
+                            easing: [0.22, 1, 0.36, 1],
+                        });
+                    }
+                    node.classList.add('is-visible');
+                    return;
+                }
+                if (scene === 'stagger-children') {
+                    var children = node.children;
+                    if (children.length) {
+                        api.animate(children, { opacity: [0, 1], y: [16, 0] }, {
+                            duration: durationSec() * 0.8,
+                            delay: api.stagger(0.05),
+                            easing: [0.22, 1, 0.36, 1],
+                        });
+                    }
+                    node.classList.add('is-visible');
+                    return;
+                }
+                api.animate(node, {
+                    opacity: [0, 1],
+                    y: scene === 'slide-in' ? [24, 0] : [0, 0],
+                }, {
+                    duration: durationSec(),
+                    easing: [0.22, 1, 0.36, 1],
+                });
+                node.classList.add('is-visible');
+            };
+
+            if (api.inView) {
+                api.inView(node, function () {
+                    run();
+                    return false;
+                }, { amount: 0.2 });
             } else {
-                cssScenes.push(node);
+                run();
             }
         });
-        if (cssScenes.length) {
-            initCssScenes(cssScenes);
-        }
-        if (gsapScenes.length) {
-            if (prefersReduced()) {
-                initCssScenes(gsapScenes);
-            } else {
-                initGsapScenes(gsapScenes);
-            }
-        }
     }
 
     window.addEventListener('pageswap', onSwap);
     window.addEventListener('pagereveal', onReveal);
+    document.addEventListener('click', onClick, true);
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initScenes);
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.navigation) {
+                playEnter();
+            }
+            initScenes();
+        });
     } else {
+        if (!window.navigation) {
+            playEnter();
+        }
         initScenes();
     }
 })();

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Woocommerce
+final class WpMotion_Woocommerce
 {
     public function boot(): void
     {
@@ -15,11 +15,11 @@ final class WpGsap_Woocommerce
      */
     public function product_image(string $html, $product): string
     {
-        if ($html === '' || !WpGsap_Plugin::is_front_enabled()) {
+        if ($html === '' || !WpMotion_Plugin::is_front_enabled()) {
             return $html;
         }
 
-        $settings = WpGsap_Settings::get();
+        $settings = WpMotion_Settings::get();
         if (empty($settings['shared_featured_image'])) {
             return $html;
         }
@@ -29,19 +29,19 @@ final class WpGsap_Woocommerce
             return $html;
         }
 
-        $html = WpGsap_Html::add_style($html, 'view-transition-name', WpGsap_Names::product_image($id));
-        return WpGsap_Html::add_attribute($html, 'data-wpgsap-shared', WpGsap_Names::product_image($id));
+        $html = WpMotion_Html::add_style($html, 'view-transition-name', WpMotion_Names::product_image($id));
+        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', WpMotion_Names::product_image($id));
     }
 
     public function single_image(string $html, $attachment_id): string
     {
         unset($attachment_id);
 
-        if ($html === '' || !WpGsap_Plugin::is_front_enabled()) {
+        if ($html === '' || !WpMotion_Plugin::is_front_enabled()) {
             return $html;
         }
 
-        $settings = WpGsap_Settings::get();
+        $settings = WpMotion_Settings::get();
         if (empty($settings['shared_featured_image'])) {
             return $html;
         }
@@ -51,8 +51,8 @@ final class WpGsap_Woocommerce
             return $html;
         }
 
-        $html = WpGsap_Html::add_style($html, 'view-transition-name', WpGsap_Names::product_image($id));
-        return WpGsap_Html::add_attribute($html, 'data-wpgsap-shared', WpGsap_Names::product_image($id));
+        $html = WpMotion_Html::add_style($html, 'view-transition-name', WpMotion_Names::product_image($id));
+        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', WpMotion_Names::product_image($id));
     }
 
     /**

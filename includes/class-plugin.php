@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Plugin
+final class WpMotion_Plugin
 {
     private static ?self $instance = null;
 
@@ -14,15 +14,15 @@ final class WpGsap_Plugin
     public function boot(): void
     {
         if (is_admin()) {
-            (new WpGsap_Admin())->boot();
-            (new WpGsap_Import_Export())->boot();
+            (new WpMotion_Admin())->boot();
+            (new WpMotion_Import_Export())->boot();
         }
 
-        (new WpGsap_View_Transitions())->boot();
-        (new WpGsap_Shared_Elements())->boot();
-        (new WpGsap_Assets())->boot();
-        (new WpGsap_Blocks())->boot();
-        (new WpGsap_Woocommerce())->boot();
+        (new WpMotion_View_Transitions())->boot();
+        (new WpMotion_Shared_Elements())->boot();
+        (new WpMotion_Assets())->boot();
+        (new WpMotion_Blocks())->boot();
+        (new WpMotion_Woocommerce())->boot();
     }
 
     /**
@@ -32,7 +32,7 @@ final class WpGsap_Plugin
      */
     public static function is_front_enabled(?array $settings = null): bool
     {
-        $settings ??= WpGsap_Settings::get();
+        $settings ??= WpMotion_Settings::get();
         if (empty($settings['enabled'])) {
             return false;
         }
@@ -45,7 +45,7 @@ final class WpGsap_Plugin
             return false;
         }
 
-        $template = WpGsap_Template_Resolver::current();
+        $template = WpMotion_Template_Resolver::current();
         if ($template === 'excluded') {
             return false;
         }
@@ -54,13 +54,13 @@ final class WpGsap_Plugin
             return false;
         }
 
-        $path = WpGsap_Template_Resolver::path_from_url(home_url(add_query_arg([])));
+        $path = WpMotion_Template_Resolver::path_from_url(home_url(add_query_arg([])));
         if (isset($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI'])) {
-            $path = WpGsap_Exclusions::normalize($_SERVER['REQUEST_URI']);
+            $path = WpMotion_Exclusions::normalize($_SERVER['REQUEST_URI']);
         }
 
         $user_paths = is_array($settings['exclude_paths'] ?? null) ? $settings['exclude_paths'] : [];
 
-        return !WpGsap_Exclusions::match($path, $user_paths);
+        return !WpMotion_Exclusions::match($path, $user_paths);
     }
 }

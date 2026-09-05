@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Admin
+final class WpMotion_Admin
 {
     public function boot(): void
     {
@@ -15,10 +15,10 @@ final class WpGsap_Admin
     public function menu(): void
     {
         add_menu_page(
-            __('WP-GSAP', 'wp-gsap'),
-            __('WP-GSAP', 'wp-gsap'),
+            __('WP-Motion', 'wp-motion'),
+            __('WP-Motion', 'wp-motion'),
             'manage_options',
-            'wp-gsap',
+            'wp-motion',
             [$this, 'render'],
             'dashicons-leftright',
             58
@@ -27,30 +27,30 @@ final class WpGsap_Admin
 
     public function register(): void
     {
-        register_setting('wp_gsap', WpGsap_Settings::OPTION, [
+        register_setting('wp_motion', WpMotion_Settings::OPTION, [
             'type' => 'array',
-            'sanitize_callback' => [WpGsap_Settings::class, 'sanitize'],
-            'default' => WpGsap_Settings::defaults(),
+            'sanitize_callback' => [WpMotion_Settings::class, 'sanitize'],
+            'default' => WpMotion_Settings::defaults(),
         ]);
     }
 
     public function assets(string $hook): void
     {
-        if ($hook !== 'toplevel_page_wp-gsap') {
+        if ($hook !== 'toplevel_page_wp-motion') {
             return;
         }
 
-        wp_enqueue_style('wpgsap-admin', WPGSAP_URL . 'assets/css/admin.css', [], WPGSAP_VERSION);
-        wp_enqueue_script('wpgsap-admin', WPGSAP_URL . 'assets/js/admin.js', [], WPGSAP_VERSION, true);
-        wp_localize_script('wpgsap-admin', 'WPGSAP_ADMIN', [
-            'templates' => WpGsap_Routes::TEMPLATES,
-            'presets' => WpGsap_Settings::PRESETS,
+        wp_enqueue_style('wpmotion-admin', WPMOTION_URL . 'assets/css/admin.css', [], WPMOTION_VERSION);
+        wp_enqueue_script('wpmotion-admin', WPMOTION_URL . 'assets/js/admin.js', [], WPMOTION_VERSION, true);
+        wp_localize_script('wpmotion-admin', 'WPMOTION_ADMIN', [
+            'templates' => WpMotion_Routes::TEMPLATES,
+            'presets' => WpMotion_Settings::PRESETS,
             'i18n' => [
-                'remove' => __('Supprimer', 'wp-gsap'),
-                'from' => __('Origine', 'wp-gsap'),
-                'to' => __('Destination', 'wp-gsap'),
-                'preset' => __('Preset', 'wp-gsap'),
-                'shared' => __('Éléments partagés', 'wp-gsap'),
+                'remove' => __('Supprimer', 'wp-motion'),
+                'from' => __('Origine', 'wp-motion'),
+                'to' => __('Destination', 'wp-motion'),
+                'preset' => __('Preset', 'wp-motion'),
+                'shared' => __('Éléments partagés', 'wp-motion'),
             ],
         ]);
     }
@@ -61,15 +61,15 @@ final class WpGsap_Admin
             return;
         }
         $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
-        if ($page !== 'wp-gsap') {
+        if ($page !== 'wp-motion') {
             return;
         }
-        $flag = isset($_GET['wpgsap']) ? sanitize_key((string) $_GET['wpgsap']) : '';
+        $flag = isset($_GET['wpmotion']) ? sanitize_key((string) $_GET['wpmotion']) : '';
         if ($flag === 'imported') {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Réglages importés.', 'wp-gsap') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Réglages importés.', 'wp-motion') . '</p></div>';
         }
         if ($flag === 'import-invalid' || $flag === 'import-missing') {
-            echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Import impossible : fichier JSON invalide ou manquant.', 'wp-gsap') . '</p></div>';
+            echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Import impossible : fichier JSON invalide ou manquant.', 'wp-motion') . '</p></div>';
         }
     }
 
@@ -85,18 +85,18 @@ final class WpGsap_Admin
             $tab = 'general';
         }
 
-        $settings = WpGsap_Settings::get();
-        $base = admin_url('admin.php?page=wp-gsap');
+        $settings = WpMotion_Settings::get();
+        $base = admin_url('admin.php?page=wp-motion');
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('WP-GSAP', 'wp-gsap') . '</h1>';
-        echo '<p class="description">' . esc_html__('Transitions de pages natives (View Transitions). GSAP n’est chargé que si une scène in-page l’exige.', 'wp-gsap') . '</p>';
+        echo '<h1>' . esc_html__('WP-Motion', 'wp-motion') . '</h1>';
+        echo '<p class="description">' . esc_html__('View Transitions pour changer de page, Motion (MIT, bundlé) pour la chorégraphie leave/enter. Pas de GSAP.', 'wp-motion') . '</p>';
 
         echo '<nav class="nav-tab-wrapper wp-clearfix">';
-        $this->tab_link($base, 'general', $tab, __('Général', 'wp-gsap'));
-        $this->tab_link($base, 'routes', $tab, __('Routes', 'wp-gsap'));
-        $this->tab_link($base, 'preview', $tab, __('Aperçu', 'wp-gsap'));
-        $this->tab_link($base, 'tools', $tab, __('Outils', 'wp-gsap'));
+        $this->tab_link($base, 'general', $tab, __('Général', 'wp-motion'));
+        $this->tab_link($base, 'routes', $tab, __('Routes', 'wp-motion'));
+        $this->tab_link($base, 'preview', $tab, __('Aperçu', 'wp-motion'));
+        $this->tab_link($base, 'tools', $tab, __('Outils', 'wp-motion'));
         echo '</nav>';
 
         if ($tab === 'tools') {
@@ -112,7 +112,7 @@ final class WpGsap_Admin
         }
 
         echo '<form action="' . esc_url(admin_url('options.php')) . '" method="post">';
-        settings_fields('wp_gsap');
+        settings_fields('wp_motion');
 
         if ($tab === 'routes') {
             $this->render_routes($settings);
@@ -120,7 +120,7 @@ final class WpGsap_Admin
             $this->render_general($settings);
         }
 
-        submit_button(__('Enregistrer les modifications', 'wp-gsap'));
+        submit_button(__('Enregistrer les modifications', 'wp-motion'));
         echo '</form></div>';
     }
 
@@ -132,23 +132,23 @@ final class WpGsap_Admin
         echo '<table class="form-table" role="presentation">';
 
         $this->row(
-            __('Activer les transitions', 'wp-gsap'),
-            $this->checkbox('enabled', !empty($settings['enabled']), __('Injecter View Transitions sur le front. Inactif tant que cette case n’est pas cochée.', 'wp-gsap'))
+            __('Activer les transitions', 'wp-motion'),
+            $this->checkbox('enabled', !empty($settings['enabled']), __('Injecter View Transitions sur le front. Inactif tant que cette case n’est pas cochée.', 'wp-motion'))
         );
 
         $this->row(
-            __('Preset par défaut', 'wp-gsap'),
+            __('Preset par défaut', 'wp-motion'),
             $this->select('preset', (string) $settings['preset'], [
-                'fade' => __('Fondu', 'wp-gsap'),
-                'slide' => __('Glissement', 'wp-gsap'),
-                'wipe' => __('Balayage', 'wp-gsap'),
-                'none' => __('Aucune', 'wp-gsap'),
+                'fade' => __('Fondu', 'wp-motion'),
+                'slide' => __('Glissement', 'wp-motion'),
+                'wipe' => __('Balayage', 'wp-motion'),
+                'none' => __('Aucune', 'wp-motion'),
             ])
         );
 
         $this->row(
-            __('Durée (ms)', 'wp-gsap'),
-            '<input name="' . esc_attr(WpGsap_Settings::OPTION) . '[duration_ms]" type="number" class="small-text" min="80" max="1200" step="10" value="' . esc_attr((string) $settings['duration_ms']) . '">'
+            __('Durée (ms)', 'wp-motion'),
+            '<input name="' . esc_attr(WpMotion_Settings::OPTION) . '[duration_ms]" type="number" class="small-text" min="80" max="1200" step="10" value="' . esc_attr((string) $settings['duration_ms']) . '">'
         );
 
         $easing_labels = [
@@ -156,53 +156,45 @@ final class WpGsap_Admin
             'ease-out' => 'ease-out',
             'ease-in-out' => 'ease-in-out',
             'linear' => 'linear',
-            'snappy' => __('Snappy', 'wp-gsap'),
-            'cinematic' => __('Cinématique', 'wp-gsap'),
+            'snappy' => __('Snappy', 'wp-motion'),
+            'cinematic' => __('Cinématique', 'wp-motion'),
         ];
-        $this->row(__('Easing', 'wp-gsap'), $this->select('easing', (string) $settings['easing'], $easing_labels));
+        $this->row(__('Easing', 'wp-motion'), $this->select('easing', (string) $settings['easing'], $easing_labels));
 
         $this->row(
-            __('Mouvement réduit', 'wp-gsap'),
+            __('Mouvement réduit', 'wp-motion'),
             $this->select('reduced_motion', (string) $settings['reduced_motion'], [
-                'fade' => __('Fondu court (80 ms)', 'wp-gsap'),
-                'none' => __('Aucune animation', 'wp-gsap'),
+                'fade' => __('Fondu court (80 ms)', 'wp-motion'),
+                'none' => __('Aucune animation', 'wp-motion'),
             ])
         );
 
         $this->row(
-            __('Chemins exclus', 'wp-gsap'),
-            '<textarea name="' . esc_attr(WpGsap_Settings::OPTION) . '[exclude_paths]" class="large-text code" rows="6">' . esc_textarea(implode("\n", $settings['exclude_paths'])) . '</textarea>'
-            . '<p class="description">' . esc_html__('Un chemin par ligne. wp-admin, wp-login, REST et feeds sont toujours exclus.', 'wp-gsap') . '</p>'
+            __('Chemins exclus', 'wp-motion'),
+            '<textarea name="' . esc_attr(WpMotion_Settings::OPTION) . '[exclude_paths]" class="large-text code" rows="6">' . esc_textarea(implode("\n", $settings['exclude_paths'])) . '</textarea>'
+            . '<p class="description">' . esc_html__('Un chemin par ligne. wp-admin, wp-login, REST et feeds sont toujours exclus.', 'wp-motion') . '</p>'
         );
 
         $this->row(
-            __('Header persistant', 'wp-gsap'),
-            $this->checkbox('header_persistent', !empty($settings['header_persistent']), __('Le header (logo / barre) reste en place pendant la transition.', 'wp-gsap'))
-            . '<p><input name="' . esc_attr(WpGsap_Settings::OPTION) . '[header_selector]" type="text" class="regular-text code" value="' . esc_attr((string) $settings['header_selector']) . '"></p>'
-            . '<p class="description">' . esc_html__('Sélecteur CSS du header (thèmes classiques). Les template parts « header » FSE sont gérés automatiquement.', 'wp-gsap') . '</p>'
+            __('Header persistant', 'wp-motion'),
+            $this->checkbox('header_persistent', !empty($settings['header_persistent']), __('Le header (logo / barre) reste en place pendant la transition.', 'wp-motion'))
+            . '<p><input name="' . esc_attr(WpMotion_Settings::OPTION) . '[header_selector]" type="text" class="regular-text code" value="' . esc_attr((string) $settings['header_selector']) . '"></p>'
+            . '<p class="description">' . esc_html__('Sélecteur CSS du header (thèmes classiques). Les template parts « header » FSE sont gérés automatiquement.', 'wp-motion') . '</p>'
         );
 
         $this->row(
-            __('Image mise en avant partagée', 'wp-gsap'),
-            $this->checkbox('shared_featured_image', !empty($settings['shared_featured_image']), __('L’image d’une carte d’archive morph vers le hero de l’article (et l’image produit WooCommerce).', 'wp-gsap'))
+            __('Image mise en avant partagée', 'wp-motion'),
+            $this->checkbox('shared_featured_image', !empty($settings['shared_featured_image']), __('L’image d’une carte d’archive morph vers le hero de l’article (et l’image produit WooCommerce).', 'wp-motion'))
         );
 
         $this->row(
-            __('Titre partagé', 'wp-gsap'),
-            $this->checkbox('shared_title', !empty($settings['shared_title']), __('Le titre du bloc « Titre de la publication » continue d’une vue à l’autre.', 'wp-gsap'))
-        );
-
-        $this->row(
-            __('Source GSAP', 'wp-gsap'),
-            $this->select('gsap_source', (string) $settings['gsap_source'], [
-                'cdn' => __('CDN jsDelivr (uniquement si une scène l’exige)', 'wp-gsap'),
-                'none' => __('Ne jamais charger GSAP (scènes CSS seulement)', 'wp-gsap'),
-            ])
+            __('Titre partagé', 'wp-motion'),
+            $this->checkbox('shared_title', !empty($settings['shared_title']), __('Le titre du bloc « Titre de la publication » continue d’une vue à l’autre.', 'wp-motion'))
         );
 
         echo '</table>';
 
-        echo '<p class="description">' . esc_html__('Les scènes in-page (fade, slide, stagger, SplitText, pin, parallax) se règlent sur les blocs Groupe et Titre dans l’éditeur.', 'wp-gsap') . '</p>';
+        echo '<p class="description">' . esc_html__('Les scènes in-page (fade, slide, stagger, split texte, pin CSS, parallax) se règlent sur les blocs Groupe et Titre dans l’éditeur.', 'wp-motion') . '</p>';
     }
 
     /**
@@ -210,13 +202,13 @@ final class WpGsap_Admin
      */
     private function render_routes(array $settings): void
     {
-        echo '<p>' . esc_html__('Première règle la plus spécifique gagne. * = n’importe quel template. Le checkout / panier / compte sont en « none » par défaut.', 'wp-gsap') . '</p>';
-        echo '<table class="widefat striped" id="wpgsap-routes">';
+        echo '<p>' . esc_html__('Première règle la plus spécifique gagne. * = n’importe quel template. Le checkout / panier / compte sont en « none » par défaut.', 'wp-motion') . '</p>';
+        echo '<table class="widefat striped" id="wpmotion-routes">';
         echo '<thead><tr>';
-        echo '<th>' . esc_html__('Origine', 'wp-gsap') . '</th>';
-        echo '<th>' . esc_html__('Destination', 'wp-gsap') . '</th>';
-        echo '<th>' . esc_html__('Preset', 'wp-gsap') . '</th>';
-        echo '<th>' . esc_html__('Partagés', 'wp-gsap') . '</th>';
+        echo '<th>' . esc_html__('Origine', 'wp-motion') . '</th>';
+        echo '<th>' . esc_html__('Destination', 'wp-motion') . '</th>';
+        echo '<th>' . esc_html__('Preset', 'wp-motion') . '</th>';
+        echo '<th>' . esc_html__('Partagés', 'wp-motion') . '</th>';
         echo '<th></th>';
         echo '</tr></thead><tbody>';
 
@@ -226,17 +218,17 @@ final class WpGsap_Admin
         }
 
         echo '</tbody></table>';
-        echo '<p><button type="button" class="button" id="wpgsap-add-route">' . esc_html__('Ajouter une règle', 'wp-gsap') . '</button></p>';
+        echo '<p><button type="button" class="button" id="wpmotion-add-route">' . esc_html__('Ajouter une règle', 'wp-motion') . '</button></p>';
 
-        foreach (['enabled', 'preset', 'duration_ms', 'easing', 'reduced_motion', 'header_persistent', 'header_selector', 'shared_featured_image', 'shared_title', 'gsap_source'] as $keep) {
+        foreach (['enabled', 'preset', 'duration_ms', 'easing', 'reduced_motion', 'header_persistent', 'header_selector', 'shared_featured_image', 'shared_title'] as $keep) {
             $value = $settings[$keep] ?? '';
             if (is_bool($value)) {
-                echo '<input type="hidden" name="' . esc_attr(WpGsap_Settings::OPTION . '[' . $keep . ']') . '" value="' . ($value ? '1' : '0') . '">';
+                echo '<input type="hidden" name="' . esc_attr(WpMotion_Settings::OPTION . '[' . $keep . ']') . '" value="' . ($value ? '1' : '0') . '">';
             } else {
-                echo '<input type="hidden" name="' . esc_attr(WpGsap_Settings::OPTION . '[' . $keep . ']') . '" value="' . esc_attr((string) $value) . '">';
+                echo '<input type="hidden" name="' . esc_attr(WpMotion_Settings::OPTION . '[' . $keep . ']') . '" value="' . esc_attr((string) $value) . '">';
             }
         }
-        echo '<input type="hidden" name="' . esc_attr(WpGsap_Settings::OPTION) . '[exclude_paths]" value="' . esc_attr(implode("\n", $settings['exclude_paths'])) . '">';
+        echo '<input type="hidden" name="' . esc_attr(WpMotion_Settings::OPTION) . '[exclude_paths]" value="' . esc_attr(implode("\n", $settings['exclude_paths'])) . '">';
     }
 
     /**
@@ -244,18 +236,18 @@ final class WpGsap_Admin
      */
     private function route_row(int $index, array $route): void
     {
-        $option = WpGsap_Settings::OPTION;
+        $option = WpMotion_Settings::OPTION;
         $from = (string) ($route['from'] ?? '*');
         $to = (string) ($route['to'] ?? '*');
         $preset = (string) ($route['preset'] ?? 'fade');
         $shared = !empty($route['shared']);
 
-        echo '<tr class="wpgsap-route">';
+        echo '<tr class="wpmotion-route">';
         echo '<td>' . $this->select_named($option . '[routes][' . $index . '][from]', $from, $this->template_labels()) . '</td>';
         echo '<td>' . $this->select_named($option . '[routes][' . $index . '][to]', $to, $this->template_labels()) . '</td>';
         echo '<td>' . $this->select_named($option . '[routes][' . $index . '][preset]', $preset, $this->preset_labels()) . '</td>';
-        echo '<td><label><input type="checkbox" name="' . esc_attr($option . '[routes][' . $index . '][shared]') . '" value="1"' . checked($shared, true, false) . '> ' . esc_html__('Oui', 'wp-gsap') . '</label></td>';
-        echo '<td><button type="button" class="button-link-delete wpgsap-remove-route">' . esc_html__('Supprimer', 'wp-gsap') . '</button></td>';
+        echo '<td><label><input type="checkbox" name="' . esc_attr($option . '[routes][' . $index . '][shared]') . '" value="1"' . checked($shared, true, false) . '> ' . esc_html__('Oui', 'wp-motion') . '</label></td>';
+        echo '<td><button type="button" class="button-link-delete wpmotion-remove-route">' . esc_html__('Supprimer', 'wp-motion') . '</button></td>';
         echo '</tr>';
     }
 
@@ -263,33 +255,33 @@ final class WpGsap_Admin
     {
         $home = home_url('/');
         echo '<table class="form-table" role="presentation">';
-        echo '<tr><th scope="row"><label for="wpgsap-from">' . esc_html__('Page d’origine', 'wp-gsap') . '</label></th>';
-        echo '<td><input id="wpgsap-from" class="regular-text code" type="url" value="' . esc_attr($home) . '"></td></tr>';
-        echo '<tr><th scope="row"><label for="wpgsap-to">' . esc_html__('Page de destination', 'wp-gsap') . '</label></th>';
-        echo '<td><input id="wpgsap-to" class="regular-text code" type="url" value="" placeholder="https://"></td></tr>';
+        echo '<tr><th scope="row"><label for="wpmotion-from">' . esc_html__('Page d’origine', 'wp-motion') . '</label></th>';
+        echo '<td><input id="wpmotion-from" class="regular-text code" type="url" value="' . esc_attr($home) . '"></td></tr>';
+        echo '<tr><th scope="row"><label for="wpmotion-to">' . esc_html__('Page de destination', 'wp-motion') . '</label></th>';
+        echo '<td><input id="wpmotion-to" class="regular-text code" type="url" value="" placeholder="https://"></td></tr>';
         echo '</table>';
-        echo '<p><button type="button" class="button button-primary" id="wpgsap-open-from">' . esc_html__('Ouvrir la page d’origine', 'wp-gsap') . '</button></p>';
-        echo '<p class="description">' . esc_html__('Les View Transitions se jouent dans le navigateur, entre deux documents. Ouvrez l’origine, puis cliquez un lien vers la destination (image mise en avant, carte d’archive, produit).', 'wp-gsap') . '</p>';
-        echo '<p class="description">' . esc_html__('Activez d’abord les transitions dans l’onglet Général. Le checkout, le panier et wp-admin ne s’animent jamais.', 'wp-gsap') . '</p>';
+        echo '<p><button type="button" class="button button-primary" id="wpmotion-open-from">' . esc_html__('Ouvrir la page d’origine', 'wp-motion') . '</button></p>';
+        echo '<p class="description">' . esc_html__('Les View Transitions se jouent dans le navigateur, entre deux documents. Ouvrez l’origine, puis cliquez un lien vers la destination (image mise en avant, carte d’archive, produit).', 'wp-motion') . '</p>';
+        echo '<p class="description">' . esc_html__('Activez d’abord les transitions dans l’onglet Général. Le checkout, le panier et wp-admin ne s’animent jamais.', 'wp-motion') . '</p>';
     }
 
     private function render_tools(): void
     {
-        echo '<h2>' . esc_html__('Exporter', 'wp-gsap') . '</h2>';
-        echo '<p>' . esc_html__('Télécharge les règles et réglages en JSON (staging → production).', 'wp-gsap') . '</p>';
+        echo '<h2>' . esc_html__('Exporter', 'wp-motion') . '</h2>';
+        echo '<p>' . esc_html__('Télécharge les règles et réglages en JSON (staging → production).', 'wp-motion') . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-        echo '<input type="hidden" name="action" value="wp_gsap_export">';
-        wp_nonce_field('wp_gsap_export');
-        submit_button(__('Télécharger JSON', 'wp-gsap'), 'secondary', 'submit', false);
+        echo '<input type="hidden" name="action" value="wp_motion_export">';
+        wp_nonce_field('wp_motion_export');
+        submit_button(__('Télécharger JSON', 'wp-motion'), 'secondary', 'submit', false);
         echo '</form>';
 
-        echo '<h2>' . esc_html__('Importer', 'wp-gsap') . '</h2>';
-        echo '<p>' . esc_html__('Remplace les réglages actuels par un fichier exporté.', 'wp-gsap') . '</p>';
+        echo '<h2>' . esc_html__('Importer', 'wp-motion') . '</h2>';
+        echo '<p>' . esc_html__('Remplace les réglages actuels par un fichier exporté.', 'wp-motion') . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" enctype="multipart/form-data">';
-        echo '<input type="hidden" name="action" value="wp_gsap_import">';
-        wp_nonce_field('wp_gsap_import');
-        echo '<input type="file" name="wp_gsap_import" accept="application/json,.json" required>';
-        submit_button(__('Importer', 'wp-gsap'), 'primary', 'submit', false);
+        echo '<input type="hidden" name="action" value="wp_motion_import">';
+        wp_nonce_field('wp_motion_import');
+        echo '<input type="file" name="wp_motion_import" accept="application/json,.json" required>';
+        submit_button(__('Importer', 'wp-motion'), 'primary', 'submit', false);
         echo '</form>';
     }
 
@@ -306,7 +298,7 @@ final class WpGsap_Admin
 
     private function checkbox(string $key, bool $checked, string $label): string
     {
-        $name = WpGsap_Settings::OPTION . '[' . $key . ']';
+        $name = WpMotion_Settings::OPTION . '[' . $key . ']';
         return '<label><input type="hidden" name="' . esc_attr($name) . '" value="0"><input type="checkbox" name="' . esc_attr($name) . '" value="1"' . checked($checked, true, false) . '> ' . esc_html($label) . '</label>';
     }
 
@@ -315,7 +307,7 @@ final class WpGsap_Admin
      */
     private function select(string $key, string $value, array $choices): string
     {
-        return $this->select_named(WpGsap_Settings::OPTION . '[' . $key . ']', $value, $choices);
+        return $this->select_named(WpMotion_Settings::OPTION . '[' . $key . ']', $value, $choices);
     }
 
     /**
@@ -338,19 +330,19 @@ final class WpGsap_Admin
     {
         return [
             '*' => '*',
-            'home' => __('Accueil', 'wp-gsap'),
-            'archive' => __('Archive / blog', 'wp-gsap'),
-            'single' => __('Article', 'wp-gsap'),
-            'page' => __('Page', 'wp-gsap'),
-            'singular' => __('Tout contenu unique', 'wp-gsap'),
-            'search' => __('Recherche', 'wp-gsap'),
+            'home' => __('Accueil', 'wp-motion'),
+            'archive' => __('Archive / blog', 'wp-motion'),
+            'single' => __('Article', 'wp-motion'),
+            'page' => __('Page', 'wp-motion'),
+            'singular' => __('Tout contenu unique', 'wp-motion'),
+            'search' => __('Recherche', 'wp-motion'),
             '404' => '404',
-            'shop' => __('Boutique', 'wp-gsap'),
-            'product' => __('Produit', 'wp-gsap'),
-            'cart' => __('Panier', 'wp-gsap'),
-            'checkout' => __('Commande', 'wp-gsap'),
-            'account' => __('Compte', 'wp-gsap'),
-            'unknown' => __('Autre', 'wp-gsap'),
+            'shop' => __('Boutique', 'wp-motion'),
+            'product' => __('Produit', 'wp-motion'),
+            'cart' => __('Panier', 'wp-motion'),
+            'checkout' => __('Commande', 'wp-motion'),
+            'account' => __('Compte', 'wp-motion'),
+            'unknown' => __('Autre', 'wp-motion'),
         ];
     }
 
@@ -360,10 +352,10 @@ final class WpGsap_Admin
     private function preset_labels(): array
     {
         return [
-            'fade' => __('Fondu', 'wp-gsap'),
-            'slide' => __('Glissement', 'wp-gsap'),
-            'wipe' => __('Balayage', 'wp-gsap'),
-            'none' => __('Aucune', 'wp-gsap'),
+            'fade' => __('Fondu', 'wp-motion'),
+            'slide' => __('Glissement', 'wp-motion'),
+            'wipe' => __('Balayage', 'wp-motion'),
+            'none' => __('Aucune', 'wp-motion'),
         ];
     }
 }

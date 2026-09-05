@@ -1,7 +1,7 @@
-#wpgsap-routes select {
+#wpmotion-routes select {
     max-width: 100%;
 }
 
-.wpgsap-route td {
+.wpmotion-route td {
     vertical-align: middle;
 }

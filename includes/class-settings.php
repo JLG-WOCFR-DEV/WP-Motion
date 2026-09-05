@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Settings
+final class WpMotion_Settings
 {
-    public const OPTION = 'wp_gsap_settings';
+    public const OPTION = 'wp_motion_settings';
 
     public const PRESETS = ['fade', 'slide', 'wipe', 'none'];
 
@@ -19,7 +19,7 @@ final class WpGsap_Settings
 
     public const REDUCED_MOTION = ['none', 'fade'];
 
-    public const GSAP_SOURCES = ['cdn', 'none'];
+    public const LEGACY_OPTION = 'wp_gsap_settings';
 
     /**
      * @return array<string, mixed>
@@ -44,7 +44,6 @@ final class WpGsap_Settings
             'header_selector' => '#masthead, header.site-header, header.wp-block-template-part',
             'shared_featured_image' => true,
             'shared_title' => true,
-            'gsap_source' => 'cdn',
             'routes' => self::default_routes(),
         ];
     }
@@ -71,9 +70,16 @@ final class WpGsap_Settings
      */
     public static function get(): array
     {
-        $stored = get_option(self::OPTION, []);
-        if (!is_array($stored)) {
-            $stored = [];
+        $stored = get_option(self::OPTION, null);
+        if (!is_array($stored) || $stored === []) {
+            $legacy = get_option(self::LEGACY_OPTION, []);
+            if (is_array($legacy) && $legacy !== []) {
+                $stored = $legacy;
+                update_option(self::OPTION, self::sanitize(array_merge(self::defaults(), $legacy)));
+                delete_option(self::LEGACY_OPTION);
+            } else {
+                $stored = [];
+            }
         }
 
         return self::sanitize(array_merge(self::defaults(), $stored));
@@ -93,7 +99,7 @@ final class WpGsap_Settings
                 $existing = $stored;
             }
         }
-        foreach (['routes', 'exclude_paths', 'header_selector', 'preset', 'duration_ms', 'easing', 'reduced_motion', 'gsap_source'] as $key) {
+        foreach (['routes', 'exclude_paths', 'header_selector', 'preset', 'duration_ms', 'easing', 'reduced_motion'] as $key) {
             if (!array_key_exists($key, $input) && array_key_exists($key, $existing)) {
                 $input[$key] = $existing[$key];
             }
@@ -120,11 +126,6 @@ final class WpGsap_Settings
             $reduced = $defaults['reduced_motion'];
         }
 
-        $gsap = is_string($input['gsap_source'] ?? null) ? $input['gsap_source'] : $defaults['gsap_source'];
-        if (!in_array($gsap, self::GSAP_SOURCES, true)) {
-            $gsap = $defaults['gsap_source'];
-        }
-
         $duration = isset($input['duration_ms']) ? (int) $input['duration_ms'] : $defaults['duration_ms'];
         $duration = max(80, min(1200, $duration));
 
@@ -144,8 +145,7 @@ final class WpGsap_Settings
             'header_selector' => $header_selector !== '' ? $header_selector : $defaults['header_selector'],
             'shared_featured_image' => self::bool($input['shared_featured_image'] ?? true),
             'shared_title' => self::bool($input['shared_title'] ?? true),
-            'gsap_source' => $gsap,
-            'routes' => WpGsap_Routes::sanitize($input['routes'] ?? $defaults['routes']),
+            'routes' => WpMotion_Routes::sanitize($input['routes'] ?? $defaults['routes']),
         ];
     }
 

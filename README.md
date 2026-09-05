@@ -1,16 +1,15 @@
-# WP-GSAP
+# WP Motion
 
-Plugin WordPress **gratuit, GPL**, indépendant. Transitions de pages type Webflow sur un vrai site multi-pages : **View Transitions** en premier, **GSAP** seulement si une scène l’exige.
+Plugin WordPress **gratuit, GPL-2.0-or-later**. Transitions de pages type Webflow sur un vrai site multi-pages.
 
-Voir [ROADMAP.md](ROADMAP.md) pour le produit. Voir [docs/gsap-license.md](docs/gsap-license.md) pour la licence GSAP.
+- **View Transitions** pour changer d’URL (pas de SPA, pas de Barba)
+- **Motion 13.2.0 (MIT, bundlé)** pour leave / enter, stagger, parallax
+- Splitter de mots **GPL** (pas de Motion+)
+- Aucun code GSAP
 
-## Ce que ça fait
+Dépôt : [github.com/JLG-WOCFR-DEV/WP-Motion](https://github.com/JLG-WOCFR-DEV/WP-Motion)
 
-- Fondu / glissement / balayage entre pages (pas de Barba, pas de router)
-- L’image mise en avant d’une carte peut **morpher** vers le hero de l’article
-- Règles par templates (`archive → single` ≠ checkout)
-- Blocs Groupe / Titre : fade, slide, stagger (CSS) ; SplitText, pin, parallax (GSAP CDN)
-- WooCommerce : image produit partagée ; panier / commande exclus par défaut
+Le slug wordpress.org `wp-motion` appartient à un plugin de **migration** abandonné (2014). Ce projet n’a aucun lien. Publication .org éventuelle : slug distinct (`wp-motion-jlg`).
 
 ## Tests locaux
 
@@ -19,6 +18,4 @@ composer install
 composer test
 ```
 
-Ou depuis le dossier portfolio : `./run-tests.sh WP-GSAP`
-
-Pas de GitHub Actions.
+Ou `./run-tests.sh WP-Motion`. Pas de GitHub Actions.

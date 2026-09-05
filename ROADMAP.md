@@ -1,6 +1,6 @@
-# Roadmap — WP-GSAP
+# Roadmap — WP-Motion
 
-**Statut 1.0.0 :** phases 0 à 5 implémentées (socle, View Transitions, éléments partagés, graphe de routes, scènes Gutenberg, Woo / tokens / import-export). Le front reste inactif tant que « Activer les transitions » n’est pas coché.
+**Statut 1.1.0 :** dépôt **WP-Motion**. Moteur = View Transitions + **Motion MIT bundlé**. GSAP retiré. Leave/enter chorégraphiés. Le front reste inactif tant que « Activer les transitions » n’est pas coché.
 
 Plugin WordPress **gratuit, GPL, indépendant**. Objectif : des transitions de pages modernes (type Webflow) sur un vrai site WordPress, sans le transformer en SPA.
 
@@ -39,7 +39,7 @@ Repo vide aujourd’hui (`f0aa584`). Avant toute animation :
 
 | Livrable | Détail |
 |---|---|
-| Bootstrap plugin | `wp-gsap.php`, autoload, `uninstall.php`, text domain `wp-gsap` |
+| Bootstrap plugin | `wp-motion.php`, autoload, `uninstall.php`, text domain `wp-motion` |
 | Admin wp-admin | Une page Réglages, look natif (`wrap`, `form-table`, `nav-tab-wrapper`) |
 | Feature flag | Front inactif tant que l’utilisateur n’a pas coché « Activer les transitions » |
 | Exclusions hardcodées | `wp-admin`, `wp-login.php`, `wp-cron.php`, REST, feeds, previews |
@@ -76,7 +76,7 @@ C’est la feature qui justifie le plugin.
 
 | Livrable | Détail |
 |---|---|
-| Noms stables | `view-transition-name` dérivés d’IDs WP : `wpgsap-post-{ID}-image`, `wpgsap-post-{ID}-title`, `wpgsap-site-logo`, `wpgsap-site-header` |
+| Noms stables | `view-transition-name` dérivés d’IDs WP : `wpmotion-post-{ID}-image`, `wpmotion-post-{ID}-title`, `wpmotion-site-logo`, `wpmotion-site-header` |
 | Auto | Image mise en avant + titre sur les boucles et le template Single |
 | Gutenberg | Attribut sur Image, Cover, Titre : « Participe à la transition de page » |
 | Template part header | Option « le header reste » (FSE) |
@@ -135,7 +135,7 @@ Règles :
 | Cache | Compatible LiteSpeed / WP Rocket (CSS + attributs, pas de routeur) |
 | Multisite | Réglages par site |
 | i18n | FR + pot |
-| Tokens motion | Durée / easing / distance filtrables (`wpgsap_motion_tokens`). Plus tard, un thème ou Supersede peut les override — sans dépendance dure |
+| Tokens motion | Durée / easing / distance filtrables (`wpmotion_motion_tokens`). Plus tard, un thème ou Supersede peut les override — sans dépendance dure |
 | Export / import | JSON des règles de routes (site staging → prod) |
 
 ---
@@ -143,8 +143,8 @@ Règles :
 ## Découpage technique (tous les phases)
 
 ```
-wp-gsap/
-  wp-gsap.php
+wp-motion/
+  wp-motion.php
   includes/
     class-plugin.php
     class-settings.php

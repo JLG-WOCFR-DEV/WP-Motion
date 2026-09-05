@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Routes
+final class WpMotion_Routes
 {
     public const TEMPLATES = [
         'home',
@@ -28,7 +28,7 @@ final class WpGsap_Routes
     public static function sanitize($routes): array
     {
         if (!is_array($routes)) {
-            return WpGsap_Settings::default_routes();
+            return WpMotion_Settings::default_routes();
         }
 
         $clean = [];
@@ -39,14 +39,14 @@ final class WpGsap_Routes
             $from = self::template($route['from'] ?? '*');
             $to = self::template($route['to'] ?? '*');
             $preset = is_string($route['preset'] ?? null) ? $route['preset'] : 'fade';
-            if (!in_array($preset, WpGsap_Settings::PRESETS, true)) {
+            if (!in_array($preset, WpMotion_Settings::PRESETS, true)) {
                 $preset = 'fade';
             }
             $clean[] = [
                 'from' => $from,
                 'to' => $to,
                 'preset' => $preset,
-                'shared' => WpGsap_Settings::bool($route['shared'] ?? false),
+                'shared' => WpMotion_Settings::bool($route['shared'] ?? false),
             ];
         }
 
@@ -114,7 +114,7 @@ final class WpGsap_Routes
         return [
             'from' => '*',
             'to' => '*',
-            'preset' => in_array($fallback_preset, WpGsap_Settings::PRESETS, true) ? $fallback_preset : 'fade',
+            'preset' => in_array($fallback_preset, WpMotion_Settings::PRESETS, true) ? $fallback_preset : 'fade',
             'shared' => false,
         ];
     }

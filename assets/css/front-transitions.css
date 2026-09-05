@@ -1,79 +1,79 @@
 :root {
-    --wpgsap-duration: 400ms;
-    --wpgsap-easing: cubic-bezier(0.22, 1, 0.36, 1);
-    --wpgsap-distance: 2rem;
-    --wpgsap-reduced-duration: 80ms;
+    --wpmotion-duration: 400ms;
+    --wpmotion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+    --wpmotion-distance: 2rem;
+    --wpmotion-reduced-duration: 80ms;
 }
 
-@keyframes wpgsap-fade-out {
+@keyframes wpmotion-fade-out {
     to { opacity: 0; }
 }
 
-@keyframes wpgsap-fade-in {
+@keyframes wpmotion-fade-in {
     from { opacity: 0; }
 }
 
-@keyframes wpgsap-slide-out-left {
+@keyframes wpmotion-slide-out-left {
     to { transform: translateX(-30%); opacity: 0; }
 }
 
-@keyframes wpgsap-slide-in-right {
+@keyframes wpmotion-slide-in-right {
     from { transform: translateX(30%); opacity: 0; }
 }
 
-@keyframes wpgsap-wipe-out {
+@keyframes wpmotion-wipe-out {
     to { clip-path: inset(0 0 0 100%); }
 }
 
-@keyframes wpgsap-wipe-in {
+@keyframes wpmotion-wipe-in {
     from { clip-path: inset(0 100% 0 0); }
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-    animation-duration: var(--wpgsap-duration);
-    animation-timing-function: var(--wpgsap-easing);
+    animation-duration: var(--wpmotion-duration);
+    animation-timing-function: var(--wpmotion-easing);
     animation-fill-mode: both;
 }
 
 html:active-view-transition-type(fade)::view-transition-old(root) {
-    animation-name: wpgsap-fade-out;
+    animation-name: wpmotion-fade-out;
 }
 
 html:active-view-transition-type(fade)::view-transition-new(root) {
-    animation-name: wpgsap-fade-in;
+    animation-name: wpmotion-fade-in;
 }
 
 html:active-view-transition-type(slide)::view-transition-old(root) {
-    animation-name: wpgsap-slide-out-left;
+    animation-name: wpmotion-slide-out-left;
 }
 
 html:active-view-transition-type(slide)::view-transition-new(root) {
-    animation-name: wpgsap-slide-in-right;
+    animation-name: wpmotion-slide-in-right;
 }
 
 html:active-view-transition-type(wipe)::view-transition-old(root) {
-    animation-name: wpgsap-wipe-out;
+    animation-name: wpmotion-wipe-out;
     z-index: 1;
 }
 
 html:active-view-transition-type(wipe)::view-transition-new(root) {
-    animation-name: wpgsap-wipe-in;
+    animation-name: wpmotion-wipe-in;
 }
 
 html:active-view-transition-type(reduced)::view-transition-old(root),
 html:active-view-transition-type(reduced)::view-transition-new(root) {
-    animation-duration: var(--wpgsap-reduced-duration);
-    animation-name: wpgsap-fade-out;
+    animation-duration: var(--wpmotion-reduced-duration);
+    animation-name: wpmotion-fade-out;
 }
 
 html:active-view-transition-type(reduced)::view-transition-new(root) {
-    animation-name: wpgsap-fade-in;
+    animation-name: wpmotion-fade-in;
 }
 
 @media (prefers-reduced-motion: reduce) {
     html:not(:active-view-transition-type(reduced)):not(:active-view-transition-type(fade))::view-transition-old(root),
     html:not(:active-view-transition-type(reduced)):not(:active-view-transition-type(fade))::view-transition-new(root) {
-        animation-duration: var(--wpgsap-reduced-duration);
+        animation-duration: var(--wpmotion-reduced-duration);
     }
 }

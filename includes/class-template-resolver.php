@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class WpGsap_Template_Resolver
+final class WpMotion_Template_Resolver
 {
     /**
      * Resolve a request path against known WordPress/WooCommerce URLs.
@@ -11,9 +11,9 @@ final class WpGsap_Template_Resolver
      */
     public static function from_path(string $path, array $known): string
     {
-        $path = WpGsap_Exclusions::normalize($path);
+        $path = WpMotion_Exclusions::normalize($path);
 
-        if (WpGsap_Exclusions::is_hardcoded($path)) {
+        if (WpMotion_Exclusions::is_hardcoded($path)) {
             return 'excluded';
         }
 
@@ -26,7 +26,7 @@ final class WpGsap_Template_Resolver
             if (!is_string($template) || !is_string($known_path) || $known_path === '') {
                 continue;
             }
-            $known_path = WpGsap_Exclusions::normalize($known_path);
+            $known_path = WpMotion_Exclusions::normalize($known_path);
             if ($known_path === '/') {
                 if ($path === '/') {
                     $matches[$template] = 1;
@@ -133,6 +133,6 @@ final class WpGsap_Template_Resolver
     public static function path_from_url(string $url): string
     {
         $path = parse_url($url, PHP_URL_PATH);
-        return WpGsap_Exclusions::normalize(is_string($path) ? $path : '/');
+        return WpMotion_Exclusions::normalize(is_string($path) ? $path : '/');
     }
 }
