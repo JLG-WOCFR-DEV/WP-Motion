@@ -1,5 +1,7 @@
 # Roadmap — WP-GSAP
 
+**Statut 1.0.0 :** phases 0 à 5 implémentées (socle, View Transitions, éléments partagés, graphe de routes, scènes Gutenberg, Woo / tokens / import-export). Le front reste inactif tant que « Activer les transitions » n’est pas coché.
+
 Plugin WordPress **gratuit, GPL, indépendant**. Objectif : des transitions de pages modernes (type Webflow) sur un vrai site WordPress, sans le transformer en SPA.
 
 Réinventer la roue est assumé. La différenciation n’est pas « encore un GSAP », c’est **la chorégraphie entre templates WordPress** (archive → article, fiche produit, header qui reste, image qui morph).

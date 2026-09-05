@@ -1,0 +1,7 @@
+#wpgsap-routes select {
+    max-width: 100%;
+}
+
+.wpgsap-route td {
+    vertical-align: middle;
+}

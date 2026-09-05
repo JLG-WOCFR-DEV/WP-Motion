@@ -1,0 +1,79 @@
+:root {
+    --wpgsap-duration: 400ms;
+    --wpgsap-easing: cubic-bezier(0.22, 1, 0.36, 1);
+    --wpgsap-distance: 2rem;
+    --wpgsap-reduced-duration: 80ms;
+}
+
+@keyframes wpgsap-fade-out {
+    to { opacity: 0; }
+}
+
+@keyframes wpgsap-fade-in {
+    from { opacity: 0; }
+}
+
+@keyframes wpgsap-slide-out-left {
+    to { transform: translateX(-30%); opacity: 0; }
+}
+
+@keyframes wpgsap-slide-in-right {
+    from { transform: translateX(30%); opacity: 0; }
+}
+
+@keyframes wpgsap-wipe-out {
+    to { clip-path: inset(0 0 0 100%); }
+}
+
+@keyframes wpgsap-wipe-in {
+    from { clip-path: inset(0 100% 0 0); }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: var(--wpgsap-duration);
+    animation-timing-function: var(--wpgsap-easing);
+    animation-fill-mode: both;
+}
+
+html:active-view-transition-type(fade)::view-transition-old(root) {
+    animation-name: wpgsap-fade-out;
+}
+
+html:active-view-transition-type(fade)::view-transition-new(root) {
+    animation-name: wpgsap-fade-in;
+}
+
+html:active-view-transition-type(slide)::view-transition-old(root) {
+    animation-name: wpgsap-slide-out-left;
+}
+
+html:active-view-transition-type(slide)::view-transition-new(root) {
+    animation-name: wpgsap-slide-in-right;
+}
+
+html:active-view-transition-type(wipe)::view-transition-old(root) {
+    animation-name: wpgsap-wipe-out;
+    z-index: 1;
+}
+
+html:active-view-transition-type(wipe)::view-transition-new(root) {
+    animation-name: wpgsap-wipe-in;
+}
+
+html:active-view-transition-type(reduced)::view-transition-old(root),
+html:active-view-transition-type(reduced)::view-transition-new(root) {
+    animation-duration: var(--wpgsap-reduced-duration);
+    animation-name: wpgsap-fade-out;
+}
+
+html:active-view-transition-type(reduced)::view-transition-new(root) {
+    animation-name: wpgsap-fade-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html:not(:active-view-transition-type(reduced)):not(:active-view-transition-type(fade))::view-transition-old(root),
+    html:not(:active-view-transition-type(reduced)):not(:active-view-transition-type(fade))::view-transition-new(root) {
+        animation-duration: var(--wpgsap-reduced-duration);
+    }
+}

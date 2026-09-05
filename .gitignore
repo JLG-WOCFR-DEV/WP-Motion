@@ -1,0 +1,7 @@
+/vendor/
+/node_modules/
+/wordpress/
+/playwright-report/
+/test-results/
+.DS_Store
+.phpunit.result.cache
