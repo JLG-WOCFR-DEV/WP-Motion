@@ -18,7 +18,8 @@ final class WpMotion_Assets
         }
 
         $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
-        if ($page !== 'wp-motion') {
+        $tab = isset($_GET['tab']) ? sanitize_key((string) $_GET['tab']) : 'general';
+        if ($page !== 'wp-motion' || $tab !== 'tools') {
             return;
         }
 

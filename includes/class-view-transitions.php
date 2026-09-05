@@ -24,6 +24,9 @@ final class WpMotion_View_Transitions
         if ($id > 0) {
             $output .= ' data-wpmotion-id="' . esc_attr((string) $id) . '"';
         }
+        if (WpMotion_Plugin::is_debug()) {
+            $output .= ' data-wpmotion-debug="1"';
+        }
 
         return $output;
     }

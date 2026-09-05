@@ -74,4 +74,12 @@ final class NamesHtmlTokensTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/<figure[^>]*view-transition-name/', $out);
         $this->assertMatchesRegularExpression('/<img[^>]*data-wpmotion-shared="wpmotion-post-4-image"/', $out);
     }
+
+    public function test_image_like_names_prefer_img_tag(): void
+    {
+        $this->assertTrue(WpMotion_Shared_Elements::prefer_img('wpmotion-post-3-image'));
+        $this->assertTrue(WpMotion_Shared_Elements::prefer_img(WpMotion_Names::LOGO));
+        $this->assertFalse(WpMotion_Shared_Elements::prefer_img('wpmotion-post-3-title'));
+        $this->assertFalse(WpMotion_Shared_Elements::prefer_img(WpMotion_Names::HEADER));
+    }
 }

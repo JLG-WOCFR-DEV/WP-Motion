@@ -260,7 +260,12 @@ final class WpMotion_Admin
         echo '<tr><th scope="row"><label for="wpmotion-to">' . esc_html__('Page de destination', 'wp-motion') . '</label></th>';
         echo '<td><input id="wpmotion-to" class="regular-text code" type="url" value="" placeholder="https://"></td></tr>';
         echo '</table>';
-        echo '<p><button type="button" class="button button-primary" id="wpmotion-open-from">' . esc_html__('Ouvrir la page d’origine', 'wp-motion') . '</button></p>';
+        $debug_home = add_query_arg('wpmotion_debug', '1', $home);
+        echo '<p>';
+        echo '<button type="button" class="button button-primary" id="wpmotion-open-from">' . esc_html__('Ouvrir la page d’origine', 'wp-motion') . '</button> ';
+        echo '<a class="button" href="' . esc_url($debug_home) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('Accueil en mode debug', 'wp-motion') . '</a>';
+        echo '</p>';
+        echo '<p class="description">' . esc_html__('Le mode debug (admins) entoure les éléments partagés et affiche leur view-transition-name. Ajoutez ?wpmotion_debug=1 à n’importe quelle URL du site.', 'wp-motion') . '</p>';
         echo '<p class="description">' . esc_html__('Les View Transitions se jouent dans le navigateur, entre deux documents. Ouvrez l’origine, puis cliquez un lien vers la destination (image mise en avant, carte d’archive, produit).', 'wp-motion') . '</p>';
         echo '<p class="description">' . esc_html__('Activez d’abord les transitions dans l’onglet Général. Le checkout, le panier et wp-admin ne s’animent jamais.', 'wp-motion') . '</p>';
     }

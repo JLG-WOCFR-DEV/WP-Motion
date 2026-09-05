@@ -82,4 +82,17 @@ final class WpMotion_Plugin
 
         return !WpMotion_Exclusions::match($path, $user_paths);
     }
+
+    public static function is_debug(): bool
+    {
+        if (!isset($_GET['wpmotion_debug'])) {
+            return false;
+        }
+        $flag = sanitize_text_field((string) $_GET['wpmotion_debug']);
+        if ($flag !== '1' && $flag !== 'true') {
+            return false;
+        }
+
+        return function_exists('current_user_can') && current_user_can('manage_options');
+    }
 }

@@ -67,7 +67,14 @@
      * must NOT fade the outgoing page — the browser snapshots it for the morph.
      */
     function hasMpaViewTransitions() {
-        return typeof window !== 'undefined' && 'onpageswap' in window;
+        if (typeof window !== 'undefined' && 'onpageswap' in window) {
+            return true;
+        }
+        try {
+            return typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('at-rule', '@view-transition');
+        } catch (e) {
+            return false;
+        }
     }
 
     function normalizePath(url) {
@@ -583,8 +590,27 @@
         });
     });
 
+    function paintDebug() {
+        if (document.documentElement.getAttribute('data-wpmotion-debug') !== '1') {
+            return;
+        }
+        document.querySelectorAll('[data-wpmotion-shared]').forEach(function (el) {
+            if (el.getAttribute('data-wpmotion-debug-label') === '1') {
+                return;
+            }
+            var badge = document.createElement('span');
+            badge.className = 'wpmotion-debug-label';
+            badge.textContent = el.getAttribute('data-wpmotion-shared') || '';
+            el.setAttribute('data-wpmotion-debug-label', '1');
+            if (el.parentNode) {
+                el.parentNode.insertBefore(badge, el.nextSibling);
+            }
+        });
+    }
+
     function onReady() {
         pinPersistentHeader();
+        paintDebug();
         initScenes();
         preloadMotion();
         if (!hasMpaViewTransitions()) {
