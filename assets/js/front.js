@@ -495,6 +495,22 @@
     window.addEventListener('pageswap', onSwap);
     window.addEventListener('pagereveal', onReveal);
     document.addEventListener('click', onClick, true);
+    window.addEventListener('pageshow', function (event) {
+        if (!event.persisted) {
+            return;
+        }
+        leaving = false;
+        entered = false;
+        var api = motionApi();
+        var root = contentRoot();
+        if (!api || !root) {
+            return;
+        }
+        var targets = collectMotionTargets(root, 40);
+        if (targets.length) {
+            api.animate(targets, { opacity: 1, y: 0 }, { duration: 0 });
+        }
+    });
 
     function onReady() {
         pinPersistentHeader();

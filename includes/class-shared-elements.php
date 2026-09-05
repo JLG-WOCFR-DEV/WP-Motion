@@ -128,8 +128,19 @@ final class WpMotion_Shared_Elements
             return $html;
         }
 
-        $html = WpMotion_Html::add_style($html, 'view-transition-name', $name);
-        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', $name);
+        $tag = self::prefer_img($name) ? 'img' : null;
+        $styled = WpMotion_Html::add_style($html, 'view-transition-name', $name, $tag);
+        if ($tag !== null && $styled === $html) {
+            $tag = null;
+            $styled = WpMotion_Html::add_style($html, 'view-transition-name', $name, null);
+        }
+
+        return WpMotion_Html::add_attribute($styled, 'data-wpmotion-shared', $name, $tag);
+    }
+
+    public static function prefer_img(string $name): bool
+    {
+        return str_ends_with($name, '-image') || $name === WpMotion_Names::LOGO || str_starts_with($name, 'wpmotion-media-');
     }
 
     /**

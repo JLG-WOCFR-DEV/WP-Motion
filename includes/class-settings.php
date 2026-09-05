@@ -21,6 +21,9 @@ final class WpMotion_Settings
 
     public const LEGACY_OPTION = 'wp_gsap_settings';
 
+    /** @var array<string, mixed>|null */
+    private static ?array $memo = null;
+
     /**
      * @return array<string, mixed>
      */
@@ -65,11 +68,17 @@ final class WpMotion_Settings
         ];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    public static function flush(): void
+    {
+        self::$memo = null;
+    }
+
     public static function get(): array
     {
+        if (self::$memo !== null) {
+            return self::$memo;
+        }
+
         $stored = get_option(self::OPTION, null);
         if (!is_array($stored) || $stored === []) {
             $legacy = get_option(self::LEGACY_OPTION, []);
@@ -82,7 +91,9 @@ final class WpMotion_Settings
             }
         }
 
-        return self::sanitize(array_merge(self::defaults(), $stored));
+        self::$memo = self::sanitize(array_merge(self::defaults(), $stored));
+
+        return self::$memo;
     }
 
     /**
@@ -91,6 +102,7 @@ final class WpMotion_Settings
      */
     public static function sanitize(array $input): array
     {
+        self::$memo = null;
         $defaults = self::defaults();
         $existing = [];
         if (function_exists('get_option')) {

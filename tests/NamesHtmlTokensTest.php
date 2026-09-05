@@ -64,4 +64,14 @@ final class NamesHtmlTokensTest extends TestCase
         $this->assertStringNotContainsString('view-transition-name', $second);
         $this->assertStringContainsString('src="b.jpg"', $second);
     }
+
+    public function test_image_name_is_applied_to_img_not_figure(): void
+    {
+        $html = '<figure class="wp-block-post-featured-image"><img src="hero.jpg" alt="Hero"></figure>';
+        $out = WpMotion_Shared_Elements::mark($html, 'wpmotion-post-4-image');
+
+        $this->assertMatchesRegularExpression('/<img[^>]*view-transition-name:wpmotion-post-4-image/', $out);
+        $this->assertDoesNotMatchRegularExpression('/<figure[^>]*view-transition-name/', $out);
+        $this->assertMatchesRegularExpression('/<img[^>]*data-wpmotion-shared="wpmotion-post-4-image"/', $out);
+    }
 }
