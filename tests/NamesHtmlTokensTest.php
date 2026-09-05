@@ -6,6 +6,12 @@ use PHPUnit\Framework\TestCase;
 
 final class NamesHtmlTokensTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        WpMotion_Names::reset();
+    }
+
     public function test_stable_names(): void
     {
         $this->assertSame('wpmotion-post-12-image', WpMotion_Names::post_image(12));
@@ -40,5 +46,22 @@ final class NamesHtmlTokensTest extends TestCase
         $css = WpMotion_Tokens::to_css($tokens);
         $this->assertStringContainsString('--wpmotion-duration:1200ms', $css);
         $this->assertStringContainsString('cubic-bezier', $css);
+    }
+
+    public function test_claim_is_unique_per_request(): void
+    {
+        $this->assertTrue(WpMotion_Names::claim('wpmotion-post-1-image'));
+        $this->assertFalse(WpMotion_Names::claim('wpmotion-post-1-image'));
+        $this->assertTrue(WpMotion_Names::claim('wpmotion-post-2-image'));
+        $this->assertFalse(WpMotion_Names::claim(''));
+    }
+
+    public function test_mark_skips_duplicate_names(): void
+    {
+        $first = WpMotion_Shared_Elements::mark('<img src="a.jpg">', 'wpmotion-post-1-image');
+        $second = WpMotion_Shared_Elements::mark('<img src="b.jpg">', 'wpmotion-post-1-image');
+        $this->assertStringContainsString('view-transition-name:wpmotion-post-1-image', $first);
+        $this->assertStringNotContainsString('view-transition-name', $second);
+        $this->assertStringContainsString('src="b.jpg"', $second);
     }
 }

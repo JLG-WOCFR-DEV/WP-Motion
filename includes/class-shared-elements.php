@@ -10,7 +10,6 @@ final class WpMotion_Shared_Elements
         add_filter('post_thumbnail_html', [$this, 'filter_thumbnail'], 12, 2);
         add_filter('get_custom_logo', [$this, 'filter_logo'], 12);
         add_filter('post_class', [$this, 'filter_post_class'], 10, 3);
-        add_action('wp_head', [$this, 'print_header_css'], 30);
     }
 
     /**
@@ -35,29 +34,28 @@ final class WpMotion_Shared_Elements
         if ($name === 'core/template-part' && !empty($settings['header_persistent'])) {
             $slug = (string) ($attrs['slug'] ?? '');
             if ($slug === 'header') {
-                $content = WpMotion_Html::add_style($content, 'view-transition-name', WpMotion_Names::HEADER);
-                $content = WpMotion_Html::add_attribute($content, 'data-wpmotion-shared', WpMotion_Names::HEADER);
+                $content = self::mark($content, WpMotion_Names::HEADER);
             }
         }
 
         if ($name === 'core/post-featured-image' && $this->should_auto($settings['shared_featured_image'], $participate)) {
             $post_id = $this->block_post_id($block);
             if ($post_id > 0) {
-                $content = $this->mark($content, WpMotion_Names::post_image($post_id));
+                $content = self::mark($content, WpMotion_Names::post_image($post_id));
             }
         }
 
         if ($name === 'core/post-title' && $this->should_auto($settings['shared_title'], $participate)) {
             $post_id = $this->block_post_id($block);
             if ($post_id > 0) {
-                $content = $this->mark($content, WpMotion_Names::post_title($post_id));
+                $content = self::mark($content, WpMotion_Names::post_title($post_id));
             }
         }
 
         if (in_array($name, ['core/image', 'core/cover'], true) && $participate === true) {
             $media_id = (int) ($attrs['id'] ?? 0);
             $vt = $media_id > 0 ? WpMotion_Names::media($media_id) : WpMotion_Names::post_image($this->block_post_id($block));
-            $content = $this->mark($content, $vt);
+            $content = self::mark($content, $vt);
         }
 
         if (in_array($name, ['core/heading', 'core/group'], true)) {
@@ -75,7 +73,7 @@ final class WpMotion_Shared_Elements
         if ($name === 'core/heading' && $participate === true) {
             $post_id = $this->block_post_id($block);
             if ($post_id > 0) {
-                $content = $this->mark($content, WpMotion_Names::post_title($post_id));
+                $content = self::mark($content, WpMotion_Names::post_title($post_id));
             }
         }
 
@@ -93,7 +91,7 @@ final class WpMotion_Shared_Elements
             return $html;
         }
 
-        return $this->mark($html, WpMotion_Names::post_image((int) $post_id));
+        return self::mark($html, WpMotion_Names::post_image((int) $post_id));
     }
 
     public function filter_logo(string $html): string
@@ -102,7 +100,7 @@ final class WpMotion_Shared_Elements
             return $html;
         }
 
-        return $this->mark($html, WpMotion_Names::LOGO);
+        return self::mark($html, WpMotion_Names::LOGO);
     }
 
     /**
@@ -121,19 +119,17 @@ final class WpMotion_Shared_Elements
         return $classes;
     }
 
-    public function print_header_css(): void
+    /**
+     * Apply a unique view-transition-name. First claimant in the request wins.
+     */
+    public static function mark(string $html, string $name): string
     {
-        if (!WpMotion_Plugin::is_front_enabled()) {
-            return;
+        if ($html === '' || $name === '' || !WpMotion_Names::claim($name)) {
+            return $html;
         }
 
-        $settings = WpMotion_Settings::get();
-        if (empty($settings['header_persistent'])) {
-            return;
-        }
-
-        $selector = (string) $settings['header_selector'];
-        echo '<style id="wpmotion-header">' . $selector . '{view-transition-name:' . WpMotion_Names::HEADER . ';}</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        $html = WpMotion_Html::add_style($html, 'view-transition-name', $name);
+        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', $name);
     }
 
     /**
@@ -163,11 +159,5 @@ final class WpMotion_Shared_Elements
 
         $post_id = get_the_ID();
         return $post_id ? (int) $post_id : (int) get_queried_object_id();
-    }
-
-    private function mark(string $html, string $name): string
-    {
-        $html = WpMotion_Html::add_style($html, 'view-transition-name', $name);
-        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', $name);
     }
 }

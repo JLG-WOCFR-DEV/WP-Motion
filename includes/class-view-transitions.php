@@ -111,6 +111,8 @@ final class WpMotion_View_Transitions
                 'id' => (int) get_queried_object_id(),
             ],
             'known' => WpMotion_Template_Resolver::known_from_wordpress(),
+            'headerPersistent' => !empty($settings['header_persistent']),
+            'headerSelector' => (string) ($settings['header_selector'] ?? ''),
             'i18n' => [
                 'pageReady' => sprintf(
                     /* translators: %s: document title */

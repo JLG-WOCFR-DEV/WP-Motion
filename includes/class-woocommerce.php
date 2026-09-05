@@ -29,8 +29,7 @@ final class WpMotion_Woocommerce
             return $html;
         }
 
-        $html = WpMotion_Html::add_style($html, 'view-transition-name', WpMotion_Names::product_image($id));
-        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', WpMotion_Names::product_image($id));
+        return WpMotion_Shared_Elements::mark($html, WpMotion_Names::product_image($id));
     }
 
     public function single_image(string $html, $attachment_id): string
@@ -51,8 +50,7 @@ final class WpMotion_Woocommerce
             return $html;
         }
 
-        $html = WpMotion_Html::add_style($html, 'view-transition-name', WpMotion_Names::product_image($id));
-        return WpMotion_Html::add_attribute($html, 'data-wpmotion-shared', WpMotion_Names::product_image($id));
+        return WpMotion_Shared_Elements::mark($html, WpMotion_Names::product_image($id));
     }
 
     /**

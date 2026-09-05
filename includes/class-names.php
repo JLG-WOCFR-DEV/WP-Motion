@@ -7,6 +7,28 @@ final class WpMotion_Names
     public const LOGO = 'wpmotion-site-logo';
     public const HEADER = 'wpmotion-site-header';
 
+    /** @var array<string, true> */
+    private static array $claimed = [];
+
+    /**
+     * View Transitions break if the same name is used twice in one document.
+     */
+    public static function claim(string $name): bool
+    {
+        if ($name === '' || isset(self::$claimed[$name])) {
+            return false;
+        }
+
+        self::$claimed[$name] = true;
+
+        return true;
+    }
+
+    public static function reset(): void
+    {
+        self::$claimed = [];
+    }
+
     public static function ident(string $kind, int $id): string
     {
         $kind = strtolower($kind);

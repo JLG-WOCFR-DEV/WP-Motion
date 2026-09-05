@@ -164,6 +164,21 @@
         }
     }
 
+    function pinPersistentHeader() {
+        if (!config.headerPersistent || !config.headerSelector) {
+            return;
+        }
+        if (document.querySelector('[data-wpmotion-shared="wpmotion-site-header"]')) {
+            return;
+        }
+        var el = document.querySelector(config.headerSelector);
+        if (!el || el.getAttribute('data-wpmotion-shared')) {
+            return;
+        }
+        el.style.viewTransitionName = 'wpmotion-site-header';
+        el.setAttribute('data-wpmotion-shared', 'wpmotion-site-header');
+    }
+
     function contentRoot() {
         return document.querySelector('main')
             || document.querySelector('.wp-site-blocks')
@@ -482,6 +497,7 @@
     document.addEventListener('click', onClick, true);
 
     function onReady() {
+        pinPersistentHeader();
         initScenes();
         if (!hasMpaViewTransitions()) {
             playEnter({ pending: consumePendingEnter() });

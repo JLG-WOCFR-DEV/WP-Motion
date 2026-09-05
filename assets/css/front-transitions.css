@@ -71,6 +71,22 @@ html:active-view-transition-type(reduced)::view-transition-new(root) {
     animation-name: wpmotion-fade-in;
 }
 
+/* Shared morph: keep the root quiet so the named image/title is the hero. */
+html:active-view-transition-type(shared)::view-transition-old(root) {
+    animation-name: wpmotion-fade-out;
+    animation-duration: calc(var(--wpmotion-duration) * 0.65);
+}
+
+html:active-view-transition-type(shared)::view-transition-new(root) {
+    animation-name: wpmotion-fade-in;
+    animation-duration: calc(var(--wpmotion-duration) * 0.65);
+}
+
+::view-transition-group(*) {
+    animation-duration: var(--wpmotion-duration);
+    animation-timing-function: var(--wpmotion-easing);
+}
+
 @media (prefers-reduced-motion: reduce) {
     html:not(:active-view-transition-type(reduced)):not(:active-view-transition-type(fade))::view-transition-old(root),
     html:not(:active-view-transition-type(reduced)):not(:active-view-transition-type(fade))::view-transition-new(root) {
