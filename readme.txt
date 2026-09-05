@@ -4,7 +4,7 @@ Tags: animation, view transitions, motion, page transitions
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Motion est bundlé sous licence MIT (`assets/vendor/`). Le plugin est GPL-2.0-or
 3. Cocher « Activer les transitions ».
 
 == Changelog ==
+
+= 1.1.1 =
+* FIX: ne plus faire disparaître l’image partagée avant la navigation (ça cassait le morph View Transitions).
+* IMPROVEMENT: leave/enter Motion uniquement sur le contenu non partagé ; relais Motion si le navigateur n’a pas de transitions multi-pages.
+* FIX: plus d’animation d’entrée sur le premier chargement de page.
 
 = 1.1.0 =
 * Renommage WP-GSAP → WP Motion.

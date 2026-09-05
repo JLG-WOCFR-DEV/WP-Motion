@@ -90,7 +90,7 @@ final class WpMotion_Admin
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('WP-Motion', 'wp-motion') . '</h1>';
-        echo '<p class="description">' . esc_html__('View Transitions pour changer de page, Motion (MIT, bundlé) pour la chorégraphie leave/enter. Pas de GSAP.', 'wp-motion') . '</p>';
+        echo '<p class="description">' . esc_html__('View Transitions morphent les images nommées. Motion chorégraphie le reste (et prend le relais si le navigateur n’a pas de transitions multi-pages).', 'wp-motion') . '</p>';
 
         echo '<nav class="nav-tab-wrapper wp-clearfix">';
         $this->tab_link($base, 'general', $tab, __('Général', 'wp-motion'));

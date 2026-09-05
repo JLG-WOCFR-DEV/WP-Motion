@@ -1,6 +1,6 @@
 # Roadmap — WP-Motion
 
-**Statut 1.1.0 :** dépôt **WP-Motion**. Moteur = View Transitions + **Motion MIT bundlé**. GSAP retiré. Leave/enter chorégraphiés. Le front reste inactif tant que « Activer les transitions » n’est pas coché.
+**Statut 1.1.1 :** dépôt **WP-Motion**. View Transitions morphent les éléments nommés ; Motion (MIT bundlé) chorégraphie le reste et sert de relais sans VT multi-pages. Pas de GSAP. Front inactif tant que « Activer les transitions » n’est pas coché.
 
 Plugin WordPress **gratuit, GPL, indépendant**. Objectif : des transitions de pages modernes (type Webflow) sur un vrai site WordPress, sans le transformer en SPA.
 

@@ -5,6 +5,7 @@
     var hardcoded = ['/wp-admin', '/wp-login.php', '/wp-cron.php', '/wp-json/', '/xmlrpc.php', '/feed'];
     var leaving = false;
     var entered = false;
+    var ENTER_KEY = 'wpmotion-enter';
 
     function motionApi() {
         return window.Motion || null;
@@ -16,6 +17,18 @@
 
     function durationSec() {
         return Math.max(0.08, (config.durationMs || 400) / 1000);
+    }
+
+    function easing() {
+        return config.easing || [0.22, 1, 0.36, 1];
+    }
+
+    /**
+     * Cross-document View Transitions (pageswap). When this exists, Motion
+     * must NOT fade the outgoing page — the browser snapshots it for the morph.
+     */
+    function hasMpaViewTransitions() {
+        return typeof window !== 'undefined' && 'onpageswap' in window;
     }
 
     function normalizePath(url) {
@@ -146,35 +159,124 @@
         viewTransition.types.add(preset);
         viewTransition.types.add('from-' + from);
         viewTransition.types.add('to-' + to);
+        if (route && route.shared) {
+            viewTransition.types.add('shared');
+        }
     }
 
-    function onSwap(event) {
-        if (!event.viewTransition) {
-            return;
-        }
-        var dest = event.activation && event.activation.entry ? event.activation.entry.url : '';
-        if (!dest || !sameOrigin(dest) || isExcluded(dest)) {
-            event.viewTransition.skipTransition();
-            return;
-        }
-        var from = (config.current && config.current.template) || 'unknown';
-        var to = resolveTemplate(dest);
-        applyTypes(event.viewTransition, from, to, matchRoute(from, to));
+    function contentRoot() {
+        return document.querySelector('main')
+            || document.querySelector('.wp-site-blocks')
+            || document.querySelector('#content')
+            || document.querySelector('.site-content');
     }
 
-    function onReveal(event) {
-        if (event.viewTransition) {
-            var fromUrl = event.activation && event.activation.from ? event.activation.from.url : '';
-            var from = fromUrl ? resolveTemplate(fromUrl) : 'unknown';
-            var to = (config.current && config.current.template) || 'unknown';
-            if (fromUrl && isExcluded(window.location.href)) {
-                event.viewTransition.skipTransition();
-            } else {
-                applyTypes(event.viewTransition, from, to, matchRoute(from, to));
+    function isProtected(el) {
+        if (!el || el.nodeType !== 1) {
+            return true;
+        }
+        if (el.hasAttribute('data-wpmotion-shared')) {
+            return true;
+        }
+        if (el.closest && el.closest('[data-wpmotion-shared], header, .site-header, #masthead, [data-wpmotion-scene="pin"]')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Walk the content tree: keep shared images/titles intact, collect the rest.
+     */
+    function collectMotionTargets(root, limit) {
+        var out = [];
+        if (!root) {
+            return out;
+        }
+        limit = limit || 16;
+
+        function walk(el) {
+            if (out.length >= limit || !el || el.nodeType !== 1) {
+                return;
             }
+            if (isProtected(el)) {
+                return;
+            }
+            if (el.querySelector && el.querySelector('[data-wpmotion-shared]')) {
+                Array.prototype.forEach.call(el.children, walk);
+                return;
+            }
+            out.push(el);
         }
-        announcePage();
-        playEnter();
+
+        Array.prototype.forEach.call(root.children, walk);
+        return out;
+    }
+
+    function markPendingEnter() {
+        try {
+            sessionStorage.setItem(ENTER_KEY, '1');
+        } catch (e) {
+            // Ignore.
+        }
+    }
+
+    function consumePendingEnter() {
+        try {
+            var value = sessionStorage.getItem(ENTER_KEY);
+            sessionStorage.removeItem(ENTER_KEY);
+            return value === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function playLeave() {
+        var api = motionApi();
+        if (!api || prefersReduced()) {
+            return Promise.resolve();
+        }
+        var targets = collectMotionTargets(contentRoot(), 20);
+        if (!targets.length) {
+            return Promise.resolve();
+        }
+        var anim = api.animate(
+            targets,
+            { opacity: 0, y: -10 },
+            { duration: durationSec() * 0.5, easing: easing(), delay: api.stagger(0.02) }
+        );
+        return anim && anim.finished ? anim.finished.catch(function () {}) : Promise.resolve();
+    }
+
+    function playEnter(options) {
+        options = options || {};
+        if (entered || prefersReduced()) {
+            return;
+        }
+        if (!options.fromNavigation && !options.pending) {
+            return;
+        }
+        entered = true;
+        var api = motionApi();
+        if (!api) {
+            return;
+        }
+        var targets = collectMotionTargets(contentRoot(), options.afterVt ? 12 : 16);
+        if (!targets.length) {
+            return;
+        }
+        if (options.afterVt) {
+            api.animate(targets, { opacity: [0.7, 1], y: [12, 0] }, {
+                duration: durationSec() * 0.7,
+                delay: api.stagger(0.035),
+                easing: easing(),
+            });
+            return;
+        }
+        api.animate(targets, { opacity: [0, 1], y: [18, 0] }, {
+            duration: durationSec(),
+            delay: api.stagger(0.04),
+            easing: easing(),
+        });
     }
 
     function announcePage() {
@@ -192,61 +294,49 @@
         live.textContent = template;
     }
 
-    function leaveTargets() {
-        var nodes = document.querySelectorAll('main, .wp-site-blocks, #content, .site-content');
-        var extra = document.querySelectorAll('[data-wpmotion-shared], main .wp-block-post, main h1, main .wp-block-heading');
-        var list = [];
-        extra.forEach(function (node) { list.push(node); });
-        if (!list.length && nodes.length) {
-            list.push(nodes[0]);
-        }
-        return list;
-    }
-
-    function playLeave() {
-        var api = motionApi();
-        if (!api || prefersReduced() || (config.preset === 'none')) {
-            return Promise.resolve();
-        }
-        var targets = leaveTargets();
-        if (!targets.length) {
-            return Promise.resolve();
-        }
-        var anim = api.animate(
-            targets,
-            { opacity: 0, y: -12 },
-            { duration: durationSec() * 0.55, easing: config.easing || [0.22, 1, 0.36, 1], delay: api.stagger(0.025) }
-        );
-        return anim && anim.finished ? anim.finished.catch(function () {}) : Promise.resolve();
-    }
-
-    function playEnter() {
-        if (entered) {
+    function onSwap(event) {
+        if (!event.viewTransition) {
             return;
         }
-        entered = true;
-        var api = motionApi();
-        if (!api || prefersReduced()) {
+        var dest = event.activation && event.activation.entry ? event.activation.entry.url : '';
+        if (!dest || !sameOrigin(dest) || isExcluded(dest)) {
+            event.viewTransition.skipTransition();
             return;
         }
-        var main = document.querySelector('main') || document.querySelector('.wp-site-blocks') || document.querySelector('#content');
-        if (main) {
-            api.animate(main, { opacity: [0, 1], y: [20, 0] }, {
-                duration: durationSec(),
-                easing: [0.22, 1, 0.36, 1],
-            });
+        var from = (config.current && config.current.template) || 'unknown';
+        var to = resolveTemplate(dest);
+        applyTypes(event.viewTransition, from, to, matchRoute(from, to));
+    }
+
+    function onReveal(event) {
+        var fromNav = !!(event.activation);
+        if (event.viewTransition) {
+            var fromUrl = event.activation && event.activation.from ? event.activation.from.url : '';
+            var from = fromUrl ? resolveTemplate(fromUrl) : 'unknown';
+            var to = (config.current && config.current.template) || 'unknown';
+            if (fromUrl && isExcluded(window.location.href)) {
+                event.viewTransition.skipTransition();
+            } else {
+                applyTypes(event.viewTransition, from, to, matchRoute(from, to));
+            }
+            announcePage();
+            if (event.viewTransition.finished) {
+                event.viewTransition.finished.finally(function () {
+                    playEnter({ fromNavigation: fromNav, afterVt: true });
+                });
+            } else {
+                playEnter({ fromNavigation: fromNav, afterVt: true });
+            }
+            return;
         }
-        var cards = document.querySelectorAll('main .wp-block-post, main ul.products > li, main .wp-block-column');
-        if (cards.length) {
-            api.animate(cards, { opacity: [0, 1], y: [16, 0] }, {
-                duration: durationSec() * 0.85,
-                delay: api.stagger(0.045),
-                easing: [0.22, 1, 0.36, 1],
-            });
-        }
+        announcePage();
+        playEnter({ fromNavigation: fromNav, pending: consumePendingEnter() });
     }
 
     function shouldIntercept(anchor, event) {
+        if (hasMpaViewTransitions()) {
+            return false;
+        }
         if (!anchor || leaving) {
             return false;
         }
@@ -270,10 +360,7 @@
         var to = resolveTemplate(href);
         var from = (config.current && config.current.template) || 'unknown';
         var route = matchRoute(from, to);
-        if (route.preset === 'none') {
-            return false;
-        }
-        return true;
+        return route.preset !== 'none';
     }
 
     function onClick(event) {
@@ -283,6 +370,7 @@
         }
         event.preventDefault();
         leaving = true;
+        markPendingEnter();
         var href = anchor.href;
         var timeout = window.setTimeout(function () {
             window.location.href = href;
@@ -332,15 +420,7 @@
 
         nodes.forEach(function (node) {
             var scene = node.getAttribute('data-wpmotion-scene');
-            if (scene === 'pin') {
-                node.classList.add('is-visible');
-                return;
-            }
-            if (prefersReduced()) {
-                node.classList.add('is-visible');
-                return;
-            }
-            if (!api) {
+            if (scene === 'pin' || prefersReduced() || !api) {
                 node.classList.add('is-visible');
                 return;
             }
@@ -358,7 +438,7 @@
                         api.animate(words, { opacity: [0, 1], y: [12, 0] }, {
                             duration: durationSec() * 0.7,
                             delay: api.stagger(0.035),
-                            easing: [0.22, 1, 0.36, 1],
+                            easing: easing(),
                         });
                     }
                     node.classList.add('is-visible');
@@ -370,7 +450,7 @@
                         api.animate(children, { opacity: [0, 1], y: [16, 0] }, {
                             duration: durationSec() * 0.8,
                             delay: api.stagger(0.05),
-                            easing: [0.22, 1, 0.36, 1],
+                            easing: easing(),
                         });
                     }
                     node.classList.add('is-visible');
@@ -381,7 +461,7 @@
                     y: scene === 'slide-in' ? [24, 0] : [0, 0],
                 }, {
                     duration: durationSec(),
-                    easing: [0.22, 1, 0.36, 1],
+                    easing: easing(),
                 });
                 node.classList.add('is-visible');
             };
@@ -401,17 +481,16 @@
     window.addEventListener('pagereveal', onReveal);
     document.addEventListener('click', onClick, true);
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            if (!window.navigation) {
-                playEnter();
-            }
-            initScenes();
-        });
-    } else {
-        if (!window.navigation) {
-            playEnter();
-        }
+    function onReady() {
         initScenes();
+        if (!hasMpaViewTransitions()) {
+            playEnter({ pending: consumePendingEnter() });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', onReady);
+    } else {
+        onReady();
     }
 })();
