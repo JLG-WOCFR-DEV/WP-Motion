@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP-Motion
  * Description: Transitions de pages (View Transitions) chorégraphiées avec Motion (MIT). Open source, sans GSAP.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Requires at least: 6.4
  * Requires PHP: 8.0
  * Author: JLG
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WPMOTION_VERSION', '1.2.1');
+define('WPMOTION_VERSION', '1.2.2');
 define('WPMOTION_FILE', __FILE__);
 define('WPMOTION_DIR', plugin_dir_path(__FILE__));
 define('WPMOTION_URL', plugin_dir_url(__FILE__));

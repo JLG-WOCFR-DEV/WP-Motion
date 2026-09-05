@@ -12,6 +12,8 @@ final class WpMotion_Admin
         add_action('admin_notices', [$this, 'notices']);
         add_action('admin_bar_menu', [$this, 'admin_bar'], 80);
         add_action('admin_post_wpmotion_toggle', [$this, 'toggle']);
+        add_action('admin_post_wpmotion_reset_routes', [$this, 'reset_routes']);
+        add_filter('plugin_action_links_' . plugin_basename(WPMOTION_FILE), [$this, 'action_links']);
     }
 
     public function menu(): void
@@ -50,6 +52,7 @@ final class WpMotion_Admin
             'i18n' => [
                 'remove' => __('Supprimer', 'wp-motion'),
                 'shared' => __('Morph image', 'wp-motion'),
+                'resetConfirm' => __('Réinitialiser les règles De → vers aux valeurs recommandées (panier / commande / compte sans animation) ?', 'wp-motion'),
             ],
         ]);
     }
@@ -66,6 +69,9 @@ final class WpMotion_Admin
         $flag = isset($_GET['wpmotion']) ? sanitize_key((string) $_GET['wpmotion']) : '';
         if ($flag === 'imported') {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Réglages importés.', 'wp-motion') . '</p></div>';
+        }
+        if ($flag === 'routes-reset') {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Règles De → vers rétablies.', 'wp-motion') . '</p></div>';
         }
         if ($flag === 'import-invalid' || $flag === 'import-missing') {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Import impossible : fichier JSON invalide ou manquant.', 'wp-motion') . '</p></div>';
@@ -137,6 +143,36 @@ final class WpMotion_Admin
         }
         wp_safe_redirect($target);
         exit;
+    }
+
+    public function reset_routes(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Droits insuffisants.', 'wp-motion'), '', ['response' => 403]);
+        }
+        check_admin_referer('wpmotion_reset_routes');
+
+        $settings = WpMotion_Settings::get();
+        $settings['routes'] = WpMotion_Settings::default_routes();
+        update_option(WpMotion_Settings::OPTION, WpMotion_Settings::sanitize($settings));
+        WpMotion_Settings::flush();
+
+        wp_safe_redirect(admin_url('admin.php?page=wp-motion&tab=routes&wpmotion=routes-reset'));
+        exit;
+    }
+
+    /**
+     * @param array<string, string> $links
+     * @return array<string, string>
+     */
+    public function action_links(array $links): array
+    {
+        $url = admin_url('admin.php?page=wp-motion');
+        $links = array_merge([
+            'settings' => '<a href="' . esc_url($url) . '">' . esc_html__('Réglages', 'wp-motion') . '</a>',
+        ], $links);
+
+        return $links;
     }
 
     public function render(): void
@@ -327,7 +363,10 @@ final class WpMotion_Admin
         }
 
         echo '</tbody></table>';
-        echo '<p><button type="button" class="button" id="wpmotion-add-route">' . esc_html__('Ajouter une règle', 'wp-motion') . '</button></p>';
+        echo '<p>';
+        echo '<button type="button" class="button" id="wpmotion-add-route">' . esc_html__('Ajouter une règle', 'wp-motion') . '</button> ';
+        echo '<a class="button" id="wpmotion-reset-routes" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=wpmotion_reset_routes'), 'wpmotion_reset_routes')) . '">' . esc_html__('Rétablir les règles recommandées', 'wp-motion') . '</a>';
+        echo '</p>';
 
         foreach (['enabled', 'preset', 'duration_ms', 'easing', 'reduced_motion', 'header_persistent', 'header_selector', 'shared_featured_image', 'shared_title'] as $keep) {
             $value = $settings[$keep] ?? '';

@@ -67,6 +67,16 @@
         });
     }
 
+    var resetRoutes = document.getElementById('wpmotion-reset-routes');
+    if (resetRoutes) {
+        resetRoutes.addEventListener('click', function (event) {
+            var message = i18n.resetConfirm || '';
+            if (message && !window.confirm(message)) {
+                event.preventDefault();
+            }
+        });
+    }
+
     var openFrom = document.getElementById('wpmotion-open-from');
     if (openFrom) {
         openFrom.addEventListener('click', function () {
