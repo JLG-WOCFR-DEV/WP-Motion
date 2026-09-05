@@ -49,31 +49,31 @@
                     {},
                     el(
                         PanelBody,
-                        { title: __('WP-Motion', 'wp-motion'), initialOpen: false },
+                        { title: __('Motion', 'wp-motion'), initialOpen: false },
                         showParticipate && el(ToggleControl, {
-                            label: __('Participe à la transition de page', 'wp-motion'),
+                            label: __('Continuer sur la page suivante', 'wp-motion'),
                             checked: !!attrs.wpMotionParticipate,
                             onChange: function (value) {
                                 props.setAttributes({ wpMotionParticipate: value });
                             },
-                            help: __('Donne un nom View Transition stable (image, cover ou titre).', 'wp-motion'),
+                            help: __('L’élément morph d’une page à l’autre (comme une image de carte qui devient le hero).', 'wp-motion'),
                         }),
                         showScene && el(SelectControl, {
-                            label: __('Scène in-page', 'wp-motion'),
+                            label: __('Quand il entre à l’écran', 'wp-motion'),
                             value: attrs.wpMotionScene || '',
                             options: [
-                                { label: __('Aucune', 'wp-motion'), value: '' },
-                                { label: __('Apparition (fondu)', 'wp-motion'), value: 'fade-in' },
-                                { label: __('Apparition (glissement)', 'wp-motion'), value: 'slide-in' },
-                                { label: __('Stagger des enfants', 'wp-motion'), value: 'stagger-children' },
-                                { label: __('Split texte (mots)', 'wp-motion'), value: 'split-text' },
-                                { label: __('Section pinnée (CSS sticky)', 'wp-motion'), value: 'pin' },
-                                { label: __('Parallax (Motion)', 'wp-motion'), value: 'parallax' },
+                                { label: __('Rien', 'wp-motion'), value: '' },
+                                { label: __('Fondu', 'wp-motion'), value: 'fade-in' },
+                                { label: __('Glissement', 'wp-motion'), value: 'slide-in' },
+                                { label: __('Un enfant après l’autre', 'wp-motion'), value: 'stagger-children' },
+                                { label: __('Mot à mot', 'wp-motion'), value: 'split-text' },
+                                { label: __('Rester épinglé au scroll', 'wp-motion'), value: 'pin' },
+                                { label: __('Parallax léger', 'wp-motion'), value: 'parallax' },
                             ],
                             onChange: function (value) {
                                 props.setAttributes({ wpMotionScene: value });
                             },
-                            help: __('Animé avec Motion (MIT, bundlé). Le split texte est un helper GPL du plugin.', 'wp-motion'),
+                            help: __('Déclencheur au scroll, comme une apparition Webflow. Désactivé si le visiteur demande moins de mouvement.', 'wp-motion'),
                         })
                     )
                 )

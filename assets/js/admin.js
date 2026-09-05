@@ -4,12 +4,13 @@
     var table = document.getElementById('wpmotion-routes');
     var addBtn = document.getElementById('wpmotion-add-route');
     var i18n = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.i18n) || {};
-    var templates = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.templates) || ['*'];
-    var presets = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.presets) || ['fade', 'slide', 'wipe', 'none'];
+    var templates = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.templates) || { '*': '*' };
+    var presets = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.presets) || { fade: 'fade', slide: 'slide', wipe: 'wipe', none: 'none' };
 
-    function optionList(values, selected) {
-        return values.map(function (value) {
-            return '<option value="' + value + '"' + (value === selected ? ' selected' : '') + '>' + value + '</option>';
+    function optionList(map, selected) {
+        return Object.keys(map).map(function (value) {
+            var label = map[value] || value;
+            return '<option value="' + value + '"' + (value === selected ? ' selected' : '') + '>' + label + '</option>';
         }).join('');
     }
 

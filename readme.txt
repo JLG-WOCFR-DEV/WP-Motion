@@ -4,7 +4,7 @@ Tags: animation, view transitions, motion, page transitions
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.1.5
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Motion est bundlé sous licence MIT (`assets/vendor/`). Le plugin est GPL-2.0-or
 3. Cocher « Activer les transitions ».
 
 == Changelog ==
+
+= 1.2.0 =
+* IMPROVEMENT: admin réorganisé (activer → effet → ce qui reste → accessibilité → exclusions), cartes d’effet, barre d’admin on/off.
+* IMPROVEMENT: onglet « De → vers » et « Tester » en 3 étapes. Libellés Gutenberg en langage déclencheur / morph.
 
 = 1.1.5 =
 * FIX: Safari (`@view-transition` sans `pageswap`) : plus d’interception de clic qui tuait le morph.

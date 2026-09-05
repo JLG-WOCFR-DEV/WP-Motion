@@ -5,3 +5,111 @@
 .wpmotion-route td {
     vertical-align: middle;
 }
+
+.wpmotion-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 720px;
+}
+
+.wpmotion-preset {
+    flex: 1 1 140px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.wpmotion-preset input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.wpmotion-preset__card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    min-height: 100%;
+}
+
+.wpmotion-preset input:checked + .wpmotion-preset__card {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.wpmotion-preset input:focus-visible + .wpmotion-preset__card {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.wpmotion-preset__stage {
+    display: block;
+    height: 36px;
+    margin-bottom: 6px;
+    border-radius: 2px;
+    background: #f0f0f1;
+    overflow: hidden;
+    position: relative;
+}
+
+.wpmotion-preset__stage span {
+    display: block;
+    width: 40%;
+    height: 10px;
+    margin: 13px auto 0;
+    border-radius: 2px;
+    background: #2271b1;
+}
+
+.wpmotion-preset:hover .wpmotion-preset__stage--fade span,
+.wpmotion-preset input:checked + .wpmotion-preset__card .wpmotion-preset__stage--fade span {
+    animation: wpmotion-admin-fade 1s ease infinite;
+}
+
+.wpmotion-preset:hover .wpmotion-preset__stage--slide span,
+.wpmotion-preset input:checked + .wpmotion-preset__card .wpmotion-preset__stage--slide span {
+    animation: wpmotion-admin-slide 1s ease infinite;
+}
+
+.wpmotion-preset:hover .wpmotion-preset__stage--wipe span,
+.wpmotion-preset input:checked + .wpmotion-preset__card .wpmotion-preset__stage--wipe span {
+    animation: wpmotion-admin-wipe 1s ease infinite;
+}
+
+.wpmotion-preset__stage--none span {
+    background: #dcdcde;
+}
+
+@keyframes wpmotion-admin-fade {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+
+@keyframes wpmotion-admin-slide {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(12px); opacity: 0.4; }
+}
+
+@keyframes wpmotion-admin-wipe {
+    0%, 100% { clip-path: inset(0 0 0 0); }
+    50% { clip-path: inset(0 0 0 100%); }
+}
+
+.wpmotion-steps {
+    max-width: 40rem;
+    margin: 1em 0 1.5em 1.25em;
+}
+
+.wpmotion-steps li {
+    margin-bottom: 0.75em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wpmotion-preset__stage span {
+        animation: none !important;
+    }
+}
