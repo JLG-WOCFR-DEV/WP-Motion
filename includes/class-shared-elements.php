@@ -153,10 +153,10 @@ final class WpMotion_Shared_Elements
      */
     private function should_auto(bool $setting, $participate): bool
     {
-        if ($participate === false || $participate === 0 || $participate === '0') {
+        if ($participate === false || $participate === 0 || $participate === '0' || $participate === 'no' || $participate === 'false') {
             return false;
         }
-        if ($participate === true) {
+        if ($participate === true || $participate === 'yes' || $participate === 'true' || $participate === '1') {
             return true;
         }
 

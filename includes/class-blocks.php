@@ -20,5 +20,11 @@ final class WpMotion_Blocks
         );
 
         wp_set_script_translations('wpmotion-editor', 'wp-motion', WPMOTION_DIR . 'languages');
+
+        $settings = WpMotion_Settings::get();
+        wp_localize_script('wpmotion-editor', 'WPMOTION_EDITOR', [
+            'autoFeatured' => !empty($settings['shared_featured_image']),
+            'autoTitle' => !empty($settings['shared_title']),
+        ]);
     }
 }

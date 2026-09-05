@@ -7,10 +7,18 @@
     var templates = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.templates) || { '*': '*' };
     var presets = (window.WPMOTION_ADMIN && window.WPMOTION_ADMIN.presets) || { fade: 'fade', slide: 'slide', wipe: 'wipe', none: 'none' };
 
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     function optionList(map, selected) {
         return Object.keys(map).map(function (value) {
             var label = map[value] || value;
-            return '<option value="' + value + '"' + (value === selected ? ' selected' : '') + '>' + label + '</option>';
+            return '<option value="' + escapeHtml(value) + '"' + (value === selected ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
         }).join('');
     }
 
