@@ -100,6 +100,11 @@ final class WpMotion_Shared_Elements
             return $html;
         }
 
+        $settings = WpMotion_Settings::get();
+        if (!empty($settings['header_persistent'])) {
+            return $html;
+        }
+
         return self::mark($html, WpMotion_Names::LOGO);
     }
 

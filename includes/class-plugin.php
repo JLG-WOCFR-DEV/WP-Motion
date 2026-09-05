@@ -6,6 +6,8 @@ final class WpMotion_Plugin
 {
     private static ?self $instance = null;
 
+    private static ?bool $frontEnabled = null;
+
     public static function instance(): self
     {
         return self::$instance ??= new self();
@@ -31,6 +33,23 @@ final class WpMotion_Plugin
      * @param array<string, mixed>|null $settings
      */
     public static function is_front_enabled(?array $settings = null): bool
+    {
+        if ($settings === null && self::$frontEnabled !== null) {
+            return self::$frontEnabled;
+        }
+
+        $enabled = self::compute_front_enabled($settings);
+        if ($settings === null) {
+            self::$frontEnabled = $enabled;
+        }
+
+        return $enabled;
+    }
+
+    /**
+     * @param array<string, mixed>|null $settings
+     */
+    private static function compute_front_enabled(?array $settings): bool
     {
         $settings ??= WpMotion_Settings::get();
         if (empty($settings['enabled'])) {

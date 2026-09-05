@@ -74,16 +74,9 @@ final class WpMotion_View_Transitions
         );
 
         wp_enqueue_script(
-            'wpmotion-vendor',
-            WPMOTION_URL . 'assets/vendor/motion.min.js',
-            [],
-            WpMotion_Assets::MOTION_VERSION,
-            true
-        );
-        wp_enqueue_script(
             'wpmotion-front',
             WPMOTION_URL . 'assets/js/front.js',
-            ['wpmotion-vendor'],
+            [],
             WPMOTION_VERSION,
             true
         );
@@ -113,6 +106,7 @@ final class WpMotion_View_Transitions
             'known' => WpMotion_Template_Resolver::known_from_wordpress(),
             'headerPersistent' => !empty($settings['header_persistent']),
             'headerSelector' => (string) ($settings['header_selector'] ?? ''),
+            'motionSrc' => WPMOTION_URL . 'assets/vendor/motion.min.js?ver=' . rawurlencode(WpMotion_Assets::MOTION_VERSION),
             'i18n' => [
                 'pageReady' => sprintf(
                     /* translators: %s: document title */

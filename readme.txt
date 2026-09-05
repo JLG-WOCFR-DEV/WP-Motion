@@ -4,7 +4,7 @@ Tags: animation, view transitions, motion, page transitions
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Motion est bundlé sous licence MIT (`assets/vendor/`). Le plugin est GPL-2.0-or
 3. Cocher « Activer les transitions ».
 
 == Changelog ==
+
+= 1.1.4 =
+* IMPROVEMENT: Motion (75 ko) n’est plus sur le chemin critique : chargement à la demande + idle.
+* IMPROVEMENT: focus sur le contenu principal après une navigation.
+* FIX: plus de `view-transition-name` imbriqués logo + header (le header suffit).
 
 = 1.1.3 =
 * FIX: le morph porte sur l’`<img>`, pas le `<figure>` (meilleur snapshot View Transitions).

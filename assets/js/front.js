@@ -6,9 +6,48 @@
     var leaving = false;
     var entered = false;
     var ENTER_KEY = 'wpmotion-enter';
+    var motionPromise = null;
 
-    function motionApi() {
-        return window.Motion || null;
+    function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = function () { resolve(); };
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    function ensureMotion() {
+        if (prefersReduced()) {
+            return Promise.resolve(null);
+        }
+        if (window.Motion) {
+            return Promise.resolve(window.Motion);
+        }
+        if (!config.motionSrc) {
+            return Promise.resolve(null);
+        }
+        if (!motionPromise) {
+            motionPromise = loadScript(config.motionSrc).then(function () {
+                return window.Motion || null;
+            }).catch(function () {
+                return null;
+            });
+        }
+        return motionPromise;
+    }
+
+    function preloadMotion() {
+        if (prefersReduced() || window.Motion || !config.motionSrc) {
+            return;
+        }
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(function () { ensureMotion(); }, { timeout: 2500 });
+        } else {
+            window.setTimeout(function () { ensureMotion(); }, 1200);
+        }
     }
 
     function prefersReduced() {
@@ -246,20 +285,41 @@
     }
 
     function playLeave() {
-        var api = motionApi();
-        if (!api || prefersReduced()) {
+        if (prefersReduced()) {
             return Promise.resolve();
         }
-        var targets = collectMotionTargets(contentRoot(), 20);
-        if (!targets.length) {
-            return Promise.resolve();
+        return ensureMotion().then(function (api) {
+            if (!api) {
+                return;
+            }
+            var targets = collectMotionTargets(contentRoot(), 20);
+            if (!targets.length) {
+                return;
+            }
+            var anim = api.animate(
+                targets,
+                { opacity: 0, y: -10 },
+                { duration: durationSec() * 0.5, easing: easing(), delay: api.stagger(0.02) }
+            );
+            if (anim && anim.finished) {
+                return anim.finished.catch(function () {});
+            }
+        });
+    }
+
+    function focusMain() {
+        var main = contentRoot();
+        if (!main || typeof main.focus !== 'function') {
+            return;
         }
-        var anim = api.animate(
-            targets,
-            { opacity: 0, y: -10 },
-            { duration: durationSec() * 0.5, easing: easing(), delay: api.stagger(0.02) }
-        );
-        return anim && anim.finished ? anim.finished.catch(function () {}) : Promise.resolve();
+        if (!main.hasAttribute('tabindex')) {
+            main.setAttribute('tabindex', '-1');
+        }
+        try {
+            main.focus({ preventScroll: true });
+        } catch (e) {
+            main.focus();
+        }
     }
 
     function playEnter(options) {
@@ -271,26 +331,28 @@
             return;
         }
         entered = true;
-        var api = motionApi();
-        if (!api) {
-            return;
-        }
-        var targets = collectMotionTargets(contentRoot(), options.afterVt ? 12 : 16);
-        if (!targets.length) {
-            return;
-        }
-        if (options.afterVt) {
-            api.animate(targets, { opacity: [0.7, 1], y: [12, 0] }, {
-                duration: durationSec() * 0.7,
-                delay: api.stagger(0.035),
+        focusMain();
+        ensureMotion().then(function (api) {
+            if (!api) {
+                return;
+            }
+            var targets = collectMotionTargets(contentRoot(), options.afterVt ? 12 : 16);
+            if (!targets.length) {
+                return;
+            }
+            if (options.afterVt) {
+                api.animate(targets, { opacity: [0.7, 1], y: [12, 0] }, {
+                    duration: durationSec() * 0.7,
+                    delay: api.stagger(0.035),
+                    easing: easing(),
+                });
+                return;
+            }
+            api.animate(targets, { opacity: [0, 1], y: [18, 0] }, {
+                duration: durationSec(),
+                delay: api.stagger(0.04),
                 easing: easing(),
             });
-            return;
-        }
-        api.animate(targets, { opacity: [0, 1], y: [18, 0] }, {
-            duration: durationSec(),
-            delay: api.stagger(0.04),
-            easing: easing(),
         });
     }
 
@@ -427,12 +489,17 @@
     }
 
     function initScenes() {
-        var api = motionApi();
         var nodes = Array.prototype.slice.call(document.querySelectorAll('[data-wpmotion-scene]'));
         if (!nodes.length) {
             return;
         }
 
+        ensureMotion().then(function (api) {
+            runScenes(nodes, api);
+        });
+    }
+
+    function runScenes(nodes, api) {
         nodes.forEach(function (node) {
             var scene = node.getAttribute('data-wpmotion-scene');
             if (scene === 'pin' || prefersReduced() || !api) {
@@ -501,20 +568,25 @@
         }
         leaving = false;
         entered = false;
-        var api = motionApi();
         var root = contentRoot();
-        if (!api || !root) {
+        if (!root) {
             return;
         }
-        var targets = collectMotionTargets(root, 40);
-        if (targets.length) {
-            api.animate(targets, { opacity: 1, y: 0 }, { duration: 0 });
-        }
+        ensureMotion().then(function (api) {
+            if (!api) {
+                return;
+            }
+            var targets = collectMotionTargets(root, 40);
+            if (targets.length) {
+                api.animate(targets, { opacity: 1, y: 0 }, { duration: 0 });
+            }
+        });
     });
 
     function onReady() {
         pinPersistentHeader();
         initScenes();
+        preloadMotion();
         if (!hasMpaViewTransitions()) {
             playEnter({ pending: consumePendingEnter() });
         }
