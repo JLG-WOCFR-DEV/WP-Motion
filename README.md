@@ -2,6 +2,8 @@
 
 Plugin WordPress **gratuit, GPL-2.0-or-later**. Transitions de pages type Webflow sur un vrai site multi-pages.
 
+Compatible WordPress **6.4–7.1** (Tested up to 7.1). Réglages : **Réglages → WP Motion**. Le toggle on/off reste dans la barre d’admin.
+
 - **View Transitions** pour changer d’URL (pas de SPA, pas de Barba)
 - **Motion 13.2.0 (MIT, bundlé)** pour leave / enter, stagger, parallax
 - Splitter de mots **GPL** (pas de Motion+)

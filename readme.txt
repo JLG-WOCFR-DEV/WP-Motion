@@ -2,9 +2,9 @@
 Contributors: jlg
 Tags: animation, view transitions, motion, page transitions
 Requires at least: 6.4
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,9 +28,14 @@ Motion est bundlé sous licence MIT (`assets/vendor/`). Le plugin est GPL-2.0-or
 
 1. Copier le dossier dans `wp-content/plugins/`.
 2. Activer WP Motion.
-3. Cocher « Activer les transitions ».
+3. Réglages → WP Motion, cocher « Activer les transitions ».
+4. Le toggle « Motion : on/off » reste dans la barre d’admin.
 
 == Changelog ==
+
+= 1.2.3 =
+* IMPROVEMENT: Tested up to WordPress 7.1 (inspecteur Gutenberg iframé + barre d’admin persistante).
+* IMPROVEMENT: menu déplacé sous Réglages. Le toggle barre d’admin reste sur admin-post (inchangé).
 
 = 1.2.2 =
 * IMPROVEMENT: lien Réglages sur l’écran Extensions.

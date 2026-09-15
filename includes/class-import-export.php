@@ -40,7 +40,7 @@ final class WpMotion_Import_Export
 
         check_admin_referer('wp_motion_import');
 
-        $redirect = admin_url('admin.php?page=wp-motion&tab=tools');
+        $redirect = WpMotion_Admin::page_url('tools');
 
         if (empty($_FILES['wp_motion_import']['tmp_name']) || !is_uploaded_file((string) $_FILES['wp_motion_import']['tmp_name'])) {
             wp_safe_redirect(add_query_arg('wpmotion', 'import-missing', $redirect));

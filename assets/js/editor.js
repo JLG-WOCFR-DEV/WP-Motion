@@ -1,14 +1,14 @@
 (function (wp) {
     'use strict';
 
-    if (!wp || !wp.hooks || !wp.element || !wp.components) {
+    if (!wp || !wp.hooks || !wp.element || !wp.components || !wp.blockEditor || !wp.compose || !wp.i18n) {
         return;
     }
 
     var addFilter = wp.hooks.addFilter;
     var el = wp.element.createElement;
     var Fragment = wp.element.Fragment;
-    var InspectorControls = (wp.blockEditor && wp.blockEditor.InspectorControls) || (wp.editor && wp.editor.InspectorControls);
+    var InspectorControls = wp.blockEditor && wp.blockEditor.InspectorControls;
     var PanelBody = wp.components.PanelBody;
     var SelectControl = wp.components.SelectControl;
     var __ = wp.i18n.__;
@@ -92,6 +92,7 @@
                         { title: __('Motion', 'wp-motion'), initialOpen: false },
                         showParticipate && el(SelectControl, {
                             label: __('Continuer sur la page suivante', 'wp-motion'),
+                            __next40pxDefaultSize: true,
                             value: participateValue,
                             options: [
                                 { label: inheritLabel(name), value: 'inherit' },
@@ -109,6 +110,7 @@
                         }),
                         showScene && el(SelectControl, {
                             label: __('Quand il entre à l’écran', 'wp-motion'),
+                            __next40pxDefaultSize: true,
                             value: attrs.wpMotionScene || '',
                             options: [
                                 { label: __('Rien', 'wp-motion'), value: '' },

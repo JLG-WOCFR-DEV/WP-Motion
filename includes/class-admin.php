@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 final class WpMotion_Admin
 {
+    public const PAGE_SLUG = 'wp-motion';
+
     public function boot(): void
     {
         add_action('admin_menu', [$this, 'menu']);
         add_action('admin_init', [$this, 'register']);
+        add_action('admin_init', [$this, 'redirect_legacy_toplevel']);
         add_action('admin_enqueue_scripts', [$this, 'assets']);
         add_action('admin_notices', [$this, 'notices']);
         add_action('admin_bar_menu', [$this, 'admin_bar'], 80);
@@ -18,15 +21,55 @@ final class WpMotion_Admin
 
     public function menu(): void
     {
-        add_menu_page(
+        add_options_page(
             __('WP Motion', 'wp-motion'),
             __('WP Motion', 'wp-motion'),
             'manage_options',
-            'wp-motion',
-            [$this, 'render'],
-            'dashicons-leftright',
-            58
+            self::PAGE_SLUG,
+            [$this, 'render']
         );
+    }
+
+    /**
+     * Settings screen URL (Réglages → WP Motion).
+     *
+     * @param array<string, string> $extra
+     */
+    public static function page_url(string $tab = '', array $extra = []): string
+    {
+        $url = '';
+
+        if (function_exists('menu_page_url')) {
+            $registered = menu_page_url(self::PAGE_SLUG, false);
+            if (is_string($registered) && $registered !== '') {
+                $url = $registered;
+            }
+        }
+
+        if ($url === '' && function_exists('admin_url')) {
+            $url = admin_url('options-general.php?page=' . self::PAGE_SLUG);
+        }
+
+        if ($url === '') {
+            $url = 'options-general.php?page=' . self::PAGE_SLUG;
+        }
+
+        $args = $extra;
+        if ($tab !== '') {
+            $args['tab'] = $tab;
+        }
+
+        if ($args === []) {
+            return $url;
+        }
+
+        if (function_exists('add_query_arg')) {
+            return (string) add_query_arg($args, $url);
+        }
+
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url . $separator . http_build_query($args);
     }
 
     public function register(): void
@@ -38,9 +81,39 @@ final class WpMotion_Admin
         ]);
     }
 
+    /**
+     * Keep old top-level bookmarks and leftover admin-bar hrefs working.
+     */
+    public function redirect_legacy_toplevel(): void
+    {
+        global $pagenow;
+
+        if ($pagenow !== 'admin.php') {
+            return;
+        }
+
+        $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
+        if ($page !== self::PAGE_SLUG) {
+            return;
+        }
+
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $tab = isset($_GET['tab']) ? sanitize_key((string) $_GET['tab']) : '';
+        $extra = [];
+        if (isset($_GET['wpmotion'])) {
+            $extra['wpmotion'] = sanitize_key((string) $_GET['wpmotion']);
+        }
+
+        wp_safe_redirect(self::page_url($tab, $extra));
+        exit;
+    }
+
     public function assets(string $hook): void
     {
-        if ($hook !== 'toplevel_page_wp-motion') {
+        if ($hook !== 'settings_page_wp-motion') {
             return;
         }
 
@@ -63,7 +136,7 @@ final class WpMotion_Admin
             return;
         }
         $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
-        if ($page !== 'wp-motion') {
+        if ($page !== self::PAGE_SLUG) {
             return;
         }
         $flag = isset($_GET['wpmotion']) ? sanitize_key((string) $_GET['wpmotion']) : '';
@@ -79,6 +152,8 @@ final class WpMotion_Admin
     }
 
     /**
+     * Kill-switch in the toolbar, including WP 7.1 persistent admin bar (post + site editors).
+     *
      * @param \WP_Admin_Bar $bar
      */
     public function admin_bar($bar): void
@@ -89,6 +164,7 @@ final class WpMotion_Admin
 
         $settings = WpMotion_Settings::get();
         $enabled = !empty($settings['enabled']);
+        // Kill-switch stays on admin-post.php so moving the menu under Settings does not break it.
         $toggle = wp_nonce_url(admin_url('admin-post.php?action=wpmotion_toggle'), 'wpmotion_toggle');
 
         $bar->add_node([
@@ -96,7 +172,7 @@ final class WpMotion_Admin
             'title' => $enabled
                 ? esc_html__('Motion : on', 'wp-motion')
                 : esc_html__('Motion : off', 'wp-motion'),
-            'href' => admin_url('admin.php?page=wp-motion'),
+            'href' => self::page_url(),
         ]);
         $bar->add_node([
             'id' => 'wpmotion-toggle',
@@ -120,7 +196,7 @@ final class WpMotion_Admin
                 'id' => 'wpmotion-preview',
                 'parent' => 'wpmotion',
                 'title' => esc_html__('Tester (aperçu)', 'wp-motion'),
-                'href' => admin_url('admin.php?page=wp-motion&tab=preview'),
+                'href' => self::page_url('preview'),
             ]);
         }
     }
@@ -139,7 +215,7 @@ final class WpMotion_Admin
 
         $target = wp_get_referer();
         if (!is_string($target) || $target === '') {
-            $target = admin_url('admin.php?page=wp-motion');
+            $target = self::page_url();
         }
         wp_safe_redirect($target);
         exit;
@@ -157,7 +233,7 @@ final class WpMotion_Admin
         update_option(WpMotion_Settings::OPTION, WpMotion_Settings::sanitize($settings));
         WpMotion_Settings::flush();
 
-        wp_safe_redirect(admin_url('admin.php?page=wp-motion&tab=routes&wpmotion=routes-reset'));
+        wp_safe_redirect(self::page_url('routes', ['wpmotion' => 'routes-reset']));
         exit;
     }
 
@@ -167,7 +243,7 @@ final class WpMotion_Admin
      */
     public function action_links(array $links): array
     {
-        $url = admin_url('admin.php?page=wp-motion');
+        $url = self::page_url();
         $links = array_merge([
             'settings' => '<a href="' . esc_url($url) . '">' . esc_html__('Réglages', 'wp-motion') . '</a>',
         ], $links);
@@ -188,7 +264,7 @@ final class WpMotion_Admin
         }
 
         $settings = WpMotion_Settings::get();
-        $base = admin_url('admin.php?page=wp-motion');
+        $base = self::page_url();
         $enabled = !empty($settings['enabled']);
 
         echo '<div class="wrap">';
@@ -413,7 +489,7 @@ final class WpMotion_Admin
         if ($enabled) {
             echo esc_html__('déjà fait.', 'wp-motion');
         } else {
-            echo '<a href="' . esc_url(admin_url('admin.php?page=wp-motion')) . '">' . esc_html__('cochez « Activer sur le front »', 'wp-motion') . '</a>';
+            echo '<a href="' . esc_url(self::page_url()) . '">' . esc_html__('cochez « Activer sur le front »', 'wp-motion') . '</a>';
         }
         echo '</li>';
         echo '<li><strong>' . esc_html__('Vérifier les noms', 'wp-motion') . '</strong> — ';
