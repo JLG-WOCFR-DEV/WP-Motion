@@ -8,6 +8,7 @@ final class WpMotion_View_Transitions
     {
         add_filter('language_attributes', [$this, 'html_attributes']);
         add_action('wp_head', [$this, 'print_opt_in'], 1);
+        // Front only. Do not use enqueue_block_assets: WP 7.1 copies that hook into the editor iframe.
         add_action('wp_enqueue_scripts', [$this, 'enqueue'], 20);
     }
 

@@ -164,8 +164,9 @@ final class WpMotion_Admin
 
         $settings = WpMotion_Settings::get();
         $enabled = !empty($settings['enabled']);
-        // Kill-switch stays on admin-post.php so moving the menu under Settings does not break it.
+        // Kill-switch stays on admin-post.php so the Settings menu placement does not break it.
         $toggle = wp_nonce_url(admin_url('admin-post.php?action=wpmotion_toggle'), 'wpmotion_toggle');
+        $meta = self::admin_bar_link_meta();
 
         $bar->add_node([
             'id' => 'wpmotion',
@@ -173,6 +174,7 @@ final class WpMotion_Admin
                 ? esc_html__('Motion : on', 'wp-motion')
                 : esc_html__('Motion : off', 'wp-motion'),
             'href' => self::page_url(),
+            'meta' => $meta,
         ]);
         $bar->add_node([
             'id' => 'wpmotion-toggle',
@@ -181,6 +183,7 @@ final class WpMotion_Admin
                 ? esc_html__('Désactiver les transitions', 'wp-motion')
                 : esc_html__('Activer les transitions', 'wp-motion'),
             'href' => $toggle,
+            'meta' => $meta,
         ]);
 
         if (!is_admin()) {
@@ -190,6 +193,7 @@ final class WpMotion_Admin
                 'parent' => 'wpmotion',
                 'title' => esc_html__('Voir les éléments partagés', 'wp-motion'),
                 'href' => $debug,
+                'meta' => $meta,
             ]);
         } else {
             $bar->add_node([
@@ -197,8 +201,23 @@ final class WpMotion_Admin
                 'parent' => 'wpmotion',
                 'title' => esc_html__('Tester (aperçu)', 'wp-motion'),
                 'href' => self::page_url('preview'),
+                'meta' => $meta,
             ]);
         }
+    }
+
+    /**
+     * Persistent WP 7.1 toolbar (post + site editors) can sit beside an iframed
+     * canvas. target=_top keeps the kill-switch on the parent window.
+     *
+     * @return array{target: string, class: string}
+     */
+    public static function admin_bar_link_meta(): array
+    {
+        return [
+            'target' => '_top',
+            'class' => 'wpmotion-admin-bar-link',
+        ];
     }
 
     public function toggle(): void
@@ -213,12 +232,27 @@ final class WpMotion_Admin
         update_option(WpMotion_Settings::OPTION, WpMotion_Settings::sanitize($settings));
         WpMotion_Settings::flush();
 
-        $target = wp_get_referer();
-        if (!is_string($target) || $target === '') {
-            $target = self::page_url();
-        }
-        wp_safe_redirect($target);
+        wp_safe_redirect(self::toggle_redirect_target(wp_get_referer()));
         exit;
+    }
+
+    /**
+     * After the kill-switch, return to the editor or front page that sent us.
+     * Never bounce back to admin-post.php (would loop the toggle).
+     *
+     * @param mixed $referer
+     */
+    public static function toggle_redirect_target($referer): string
+    {
+        if (!is_string($referer) || $referer === '') {
+            return self::page_url();
+        }
+
+        if (str_contains($referer, 'admin-post.php')) {
+            return self::page_url();
+        }
+
+        return $referer;
     }
 
     public function reset_routes(): void

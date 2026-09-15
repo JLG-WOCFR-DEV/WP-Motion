@@ -6,7 +6,9 @@ final class WpMotion_Blocks
 {
     public function boot(): void
     {
-        // Parent document only: InspectorControls live outside the WP 7.1 iframed canvas.
+        // Parent document only. InspectorControls and the persistent admin bar
+        // live outside the WP 7.1 iframed canvas. Do not use enqueue_block_assets
+        // here: that hook is copied into the iframe.
         add_action('enqueue_block_editor_assets', [$this, 'editor_assets']);
     }
 

@@ -4,7 +4,7 @@ Tags: animation, view transitions, motion, page transitions
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,12 @@ Motion est bundlé sous licence MIT (`assets/vendor/`). Le plugin est GPL-2.0-or
 4. Le toggle « Motion : on/off » reste dans la barre d’admin.
 
 == Changelog ==
+
+= 1.2.4 =
+* FIX: inspecteur Gutenberg uniquement dans le document parent (canvas iframé WP 7.1).
+* FIX: barre d’admin persistante : liens (toggle inclus) en target=_top, retour après toggle sans boucle admin-post.
+* FIX: le JS front ne s’initialise plus dans le canvas éditeur.
+* IMPROVEMENT: Tested up to WordPress 7.1 (plugin + readme). Menu inchangé sous Réglages.
 
 = 1.2.3 =
 * IMPROVEMENT: Tested up to WordPress 7.1 (inspecteur Gutenberg iframé + barre d’admin persistante).
