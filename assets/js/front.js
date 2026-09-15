@@ -1,6 +1,46 @@
 (function () {
     'use strict';
 
+    /**
+     * Front choreography must not run inside the WP 7.1 iframed canvas
+     * (device preview, copied assets, or a frontend preview iframe).
+     */
+    function isEditorCanvas() {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+        try {
+            if (window.parent && window.parent !== window && window.parent.WPMOTION_EDITOR) {
+                return true;
+            }
+        } catch (e) {
+            // Cross-origin parent: ignore.
+        }
+        var body = typeof document !== 'undefined' ? document.body : null;
+        if (body && body.classList && body.classList.contains('block-editor-iframe__body')) {
+            return true;
+        }
+        var html = typeof document !== 'undefined' ? document.documentElement : null;
+        if (html && html.classList && html.classList.contains('block-editor-iframe__html')) {
+            return true;
+        }
+        var frame = window.frameElement;
+        if (frame) {
+            var name = frame.getAttribute('name') || '';
+            var className = String(frame.className || '');
+            if (name === 'editor-canvas' || className.indexOf('editor-canvas') !== -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    window.WPMOTION_FRONT = { isEditorCanvas: isEditorCanvas };
+
+    if (isEditorCanvas()) {
+        return;
+    }
+
     var config = window.WPMOTION || {};
     var hardcoded = ['/wp-admin', '/wp-login.php', '/wp-cron.php', '/wp-json/', '/xmlrpc.php', '/feed'];
     var leaving = false;

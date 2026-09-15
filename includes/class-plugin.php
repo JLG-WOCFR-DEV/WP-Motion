@@ -60,6 +60,10 @@ final class WpMotion_Plugin
             return false;
         }
 
+        if (function_exists('wp_is_block_editor') && wp_is_block_editor()) {
+            return false;
+        }
+
         if (function_exists('wp_is_serving_rest_request') && wp_is_serving_rest_request()) {
             return false;
         }

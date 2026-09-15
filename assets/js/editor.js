@@ -1,6 +1,63 @@
 (function (wp) {
     'use strict';
 
+    /**
+     * InspectorControls and the persistent admin bar live in the parent
+     * editor document. WP 7.1 always iframes the canvas: skip this script
+     * if Gutenberg copies it into the canvas document.
+     */
+    function isIframedCanvasDocument() {
+        if (typeof document === 'undefined') {
+            return false;
+        }
+        var body = document.body;
+        if (body && body.classList && body.classList.contains('block-editor-iframe__body')) {
+            return true;
+        }
+        var root = document.documentElement;
+        if (root && root.classList && root.classList.contains('block-editor-iframe__html')) {
+            return true;
+        }
+        var frame = typeof window !== 'undefined' ? window.frameElement : null;
+        if (frame) {
+            var name = frame.getAttribute('name') || '';
+            var className = String(frame.className || '');
+            if (name === 'editor-canvas' || className.indexOf('editor-canvas') !== -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (isIframedCanvasDocument()) {
+        return;
+    }
+
+    /**
+     * Persistent WP 7.1 toolbar stays in the parent. Force top-window
+     * navigation so a cloned bar inside a preview iframe cannot trap the toggle.
+     */
+    function retargetPersistentAdminBar() {
+        var node = document.getElementById('wp-admin-bar-wpmotion');
+        if (!node) {
+            return;
+        }
+        var anchors = node.getElementsByTagName('a');
+        var i;
+        for (i = 0; i < anchors.length; i += 1) {
+            anchors[i].setAttribute('target', '_top');
+        }
+    }
+
+    if (typeof document !== 'undefined') {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', retargetPersistentAdminBar);
+        } else {
+            retargetPersistentAdminBar();
+        }
+        window.setTimeout(retargetPersistentAdminBar, 0);
+    }
+
     if (!wp || !wp.hooks || !wp.element || !wp.components || !wp.blockEditor || !wp.compose || !wp.i18n) {
         return;
     }
@@ -26,11 +83,12 @@
         if (PARTICIPATE_BLOCKS.indexOf(name) === -1 && SCENE_BLOCKS.indexOf(name) === -1) {
             return settings;
         }
-        settings.attributes = Object.assign({}, settings.attributes, {
-            wpMotionParticipate: { type: 'boolean' },
-            wpMotionScene: { type: 'string', default: '' },
+        return Object.assign({}, settings, {
+            attributes: Object.assign({}, settings.attributes, {
+                wpMotionParticipate: { type: 'boolean' },
+                wpMotionScene: { type: 'string', default: '' },
+            }),
         });
-        return settings;
     });
 
     function participateSelectValue(attrs) {
@@ -93,6 +151,7 @@
                         showParticipate && el(SelectControl, {
                             label: __('Continuer sur la page suivante', 'wp-motion'),
                             __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true,
                             value: participateValue,
                             options: [
                                 { label: inheritLabel(name), value: 'inherit' },
@@ -111,6 +170,7 @@
                         showScene && el(SelectControl, {
                             label: __('Quand il entre à l’écran', 'wp-motion'),
                             __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true,
                             value: attrs.wpMotionScene || '',
                             options: [
                                 { label: __('Rien', 'wp-motion'), value: '' },
